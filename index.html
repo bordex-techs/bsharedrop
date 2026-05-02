@@ -3,109 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salla ve Bağlan!</title>
+    <title>Salla ve Bağlan PRO</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #1a202c; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow: hidden; }
-        .card { background: #2d3748; padding: 30px; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; width: 90%; max-width: 400px; border: 2px solid #4a5568; }
-        .shake-icon { font-size: 50px; margin-bottom: 20px; animation: shake 0.5s infinite; display: inline-block; }
-        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(10deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(-10deg); } 100% { transform: rotate(0deg); } }
-        .status { background: #4a5568; padding: 15px; border-radius: 10px; margin: 20px 0; font-size: 0.9em; }
-        .btn { background: #4299e1; color: white; border: none; padding: 15px 25px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
-        .btn:active { transform: scale(0.95); }
-        #download-link { display: none; margin-top: 20px; color: #63b3ed; text-decoration: underline; font-weight: bold; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; text-align: center; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: #1e293b; padding: 30px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 90%; max-width: 400px; border: 1px solid #334155; }
+        .status-pill { background: #334155; padding: 10px 20px; border-radius: 50px; display: inline-block; margin: 15px 0; font-size: 0.85em; transition: 0.3s; }
+        .shake-active { background: #22c55e !important; box-shadow: 0 0 20px #22c55e; }
+        .btn { background: #3b82f6; color: white; border: none; padding: 16px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        #transfer-area { margin-top: 20px; padding-top: 20px; border-top: 1px solid #334155; }
+        #download-link { display: none; margin-top: 20px; color: #60a5fa; text-decoration: none; font-weight: bold; border: 2px dashed #60a5fa; padding: 10px; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div class="shake-icon">📱</div>
-    <h2>Salla ve Bağlan</h2>
-    <p style="color: #a0aec0; font-size: 0.8em;">Bağlanmak için iki telefonu aynı anda sallayın!</p>
+<div class="container">
+    <h1 style="margin-top:0;">Fırlat-At 🚀</h1>
+    <div id="status-pill" class="status-pill">Sistem Başlatılıyor...</div>
     
-    <div class="status" id="status">Sensör izni bekleniyor...</div>
-    
-    <button class="btn" id="start-btn">Sensörleri ve Sistemi Başlat</button>
+    <div id="id-display" style="font-size: 0.7em; opacity: 0.5; margin-bottom: 20px;">ID: ...</div>
 
-    <div id="transfer-area" style="display:none; margin-top: 20px;">
-        <input type="file" id="file-input" style="margin-bottom: 10px; width: 100%;">
-        <button class="btn" style="background: #f56565;" id="send-btn">Dosyayı Fırlat 🚀</button>
+    <button class="btn" id="start-btn">Sallama Sensörünü Aç</button>
+
+    <div id="transfer-area" style="display:none;">
+        <input type="file" id="file-input" style="width:100%; margin-bottom:15px;">
+        <button class="btn" style="background:#ef4444;" id="send-btn">Dosyayı Gönder</button>
     </div>
 
-    <a id="download-link">📥 Dosyayı Al</a>
+    <a id="download-link">📥 Dosyayı İndir</a>
 </div>
 
 <script>
-    const statusEl = document.getElementById('status');
+    const statusPill = document.getElementById('status-pill');
     const startBtn = document.getElementById('start-btn');
-    const transferArea = document.getElementById('transfer-area');
-    const fileInput = document.getElementById('file-input');
-    const sendBtn = document.getElementById('send-btn');
-
+    const idDisplay = document.getElementById('id-display');
+    
     let peer = new Peer();
     let conn;
     let myId = "";
 
     peer.on('open', (id) => {
         myId = id;
-        statusEl.innerText = "Sistem hazır. Şimdi butona bas ve salla!";
+        idDisplay.innerText = "Senin ID: " + id;
+        statusPill.innerText = "Sistem hazır. Butona bas!";
     });
 
-    // SENSÖR VE BAĞLANTI BAŞLATMA
-    startBtn.onclick = () => {
+    // SENSÖRÜ BAŞLAT
+    startBtn.onclick = async () => {
         if (typeof DeviceMotionEvent.requestPermission === 'function') {
-            // iOS için izin alma
-            DeviceMotionEvent.requestPermission()
-                .then(permissionState => {
-                    if (permissionState === 'granted') {
-                        initInertia();
-                    }
-                });
-        } else {
-            // Android ve diğerleri
-            initInertia();
+            const permission = await DeviceMotionEvent.requestPermission();
+            if (permission !== 'granted') return alert("Sensör izni şart!");
         }
-        startBtn.style.display = "none";
+        
+        statusPill.innerText = "Şimdi her iki telefonu aynı anda salla!";
+        startBtn.innerText = "Dinleniyor...";
+        
+        window.addEventListener('devicemotion', handleMotion);
     };
 
-    function initInertia() {
-        statusEl.innerText = "Sallama algılanıyor... Telefonu salla!";
-        window.addEventListener('devicemotion', (event) => {
-            const acc = event.accelerationIncludingGravity;
-            const threshold = 15; // Sallama hassasiyeti (Bunu artırıp azaltabilirsin)
+    let isShaking = false;
+    function handleMotion(event) {
+        const acc = event.accelerationIncludingGravity;
+        const total = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
+
+        if (total > 25 && !isShaking) { // Hassasiyet eşiği
+            isShaking = true;
+            triggerShakeMatch();
+        }
+    }
+
+    async function triggerShakeMatch() {
+        statusPill.classList.add('shake-active');
+        statusPill.innerText = "Sallama Algılandı! ⚡";
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+        // --- YARATICI ÇÖZÜM: GEÇİCİ ODA MANTIĞI ---
+        // Burada gerçek bir sunucu yerine, PeerJS'in 'room' mantığını taklit ediyoruz.
+        // Genelde profesyonel bir uygulamada burada Firebase kullanılır.
+        // Ama biz manuel bir köprü kuralım:
+        
+        const roomName = "salla_baglan_oda_123"; // Test için sabit oda
+        
+        // Bu örnekte: Sallayan telefon kendi ID'sini "panoya" kopyalar.
+        // Eğer diğer telefon da sallandıysa, o da ID'yi panodan okumaya çalışır.
+        try {
+            await navigator.clipboard.writeText(myId);
+            // Karşı tarafın ID'sini yapıştırmasını isteyebiliriz veya
+            // Web üzerinden basit bir "aracı" kullanabiliriz.
             
-            if (Math.abs(acc.x) > threshold || Math.abs(acc.y) > threshold || Math.abs(acc.z) > threshold) {
-                handleShake();
-            }
-        });
+            // Şimdilik en sağlam manuel otomatikleşme:
+            const targetId = prompt("Diğer telefonun ID'si kopyalandı mı? Sallayanın ID'sini buraya yapıştır:");
+            if (targetId) connectToPeer(targetId);
+        } catch (e) {
+            console.log("Clipboard hatası");
+        }
+
+        setTimeout(() => {
+            statusPill.classList.remove('shake-active');
+            isShaking = false;
+        }, 2000);
     }
 
-    let lastShake = 0;
-    function handleShake() {
-        const now = Date.now();
-        if (now - lastShake < 2000) return; // 2 saniye içinde tekrar tetiklenme
-        lastShake = now;
-
-        statusEl.innerText = "Sallama Algılandı! ⚡ Bağlantı aranıyor...";
-        
-        // Yarışma/Proje için Not: Normalde burada bir sunucuya "Salladım" bilgisi gider.
-        // Biz şimdilik manuel ID'yi sallayınca ekrana yazdırıp hızlandırıyoruz.
-        // (Tam otomatik olması için bir Firebase veya Node.js sunucusu gerekir)
-        
-        // Demo amaçlı: Sallayınca ID'yi panoya kopyalar, böylece hızla paylaşabilirsin.
-        navigator.clipboard.writeText(myId);
-        alert("ID'n kopyalandı: " + myId + "\nŞimdi diğer telefona sallayarak gönder!");
+    function connectToPeer(id) {
+        statusPill.innerText = "Bağlanılıyor...";
+        conn = peer.connect(id.trim());
+        setupEvents();
     }
 
-    // PEER OLAYLARI
-    peer.on('connection', (connection) => {
-        conn = connection;
+    peer.on('connection', (c) => {
+        conn = c;
         setupEvents();
     });
 
     function setupEvents() {
-        statusEl.innerText = "✅ Bağlantı Kuruldu!";
-        transferArea.style.display = "block";
+        conn.on('open', () => {
+            statusPill.innerText = "✅ BAĞLANDI!";
+            document.getElementById('transfer-area').style.display = "block";
+        });
 
         conn.on('data', (data) => {
             const blob = new Blob([data.file]);
@@ -114,21 +128,20 @@
             dl.href = url;
             dl.download = data.filename;
             dl.style.display = "block";
-            dl.innerText = "📥 Dosyayı İndir: " + data.filename;
+            dl.innerText = "📥 İndir: " + data.filename;
         });
     }
 
-    sendBtn.onclick = () => {
-        const file = fileInput.files[0];
+    document.getElementById('send-btn').onclick = () => {
+        const file = document.getElementById('file-input').files[0];
         if (!file) return;
         const reader = new FileReader();
         reader.onload = () => {
             conn.send({ file: reader.result, filename: file.name });
-            statusEl.innerText = "Dosya gönderildi! 🚀";
+            statusPill.innerText = "Gönderildi! 🚀";
         };
         reader.readAsArrayBuffer(file);
     };
 </script>
-
 </body>
 </html>
