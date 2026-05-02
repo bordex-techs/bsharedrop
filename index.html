@@ -3,43 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hızlı Paylaşım - Pro</title>
+    <title>NFC Dosya Paylaşım Pro</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        body { font-family: sans-serif; background: #f4f4f9; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-        .btn { background: #007bff; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin: 5px 0; }
-        .btn-nfc { background: #28a745; }
-        .status-box { background: #eee; padding: 10px; border-radius: 5px; margin: 10px 0; font-size: 0.85em; min-height: 20px; color: #333; }
+        :root { --primary: #007bff; --secondary: #28a745; --danger: #dc3545; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        .status-box { background: #e9ecef; border-left: 5px solid var(--primary); padding: 15px; border-radius: 8px; margin: 15px 0; font-size: 0.9em; text-align: left; min-height: 40px; }
+        .btn { border: none; padding: 14px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin: 8px 0; transition: 0.3s; color: white; }
+        .btn-blue { background: var(--primary); }
+        .btn-green { background: var(--secondary); }
+        .btn-red { background: var(--danger); }
         #qrcode { display: flex; justify-content: center; margin: 15px 0; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        #download-link { display: none; background: #d4edda; color: #155724; padding: 10px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 10px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        #download-link { display: none; background: #d4edda; color: #155724; padding: 12px; text-decoration: none; border-radius: 8px; font-weight: bold; margin-top: 15px; display: block; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Hızlı Dosya Paylaş</h2>
+    <h2 style="margin-top:0;">NFC Transfer</h2>
     
-    <div style="font-size: 0.9em; color: #666;">Cihaz ID:</div>
-    <div id="my-id" style="font-weight: bold; color: #007bff; font-size: 1.1em;">Yükleniyor...</div>
+    <div style="font-size: 0.85em; color: #666;">Cihaz Kimliğin:</div>
+    <div id="my-id" style="font-weight: bold; color: var(--primary); font-size: 1.2em;">Yükleniyor...</div>
     <div id="qrcode"></div>
 
-    <div class="status-box" id="status">Sistem başlatılıyor...</div>
+    <div class="status-box" id="status">Sistem hazır.</div>
 
-    <button class="btn btn-nfc" onclick="writeToNFC()">ID'yi NFC'ye Yaz</button>
-    <hr>
-    <button class="btn btn-nfc" onclick="readFromNFC()">NFC'den ID Oku</button>
+    <button class="btn btn-green" onclick="writeToNFC()">1. ID'yi NFC'ye Yaz</button>
+    <button class="btn btn-green" onclick="readFromNFC()">2. NFC'den ID Oku</button>
+    
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+    
     <input type="text" id="peer-id-input" placeholder="Bağlanılacak ID">
-    <button class="btn" id="connect-btn">Cihaza Bağlan</button>
+    <button class="btn btn-blue" id="connect-btn">Manuel Bağlan</button>
 
-    <div id="transfer-area" style="display:none; border-top: 2px solid #eee; margin-top: 15px; padding-top: 15px;">
+    <div id="transfer-area" style="display:none; margin-top: 20px;">
         <input type="file" id="file-input">
-        <button class="btn" style="background: #dc3545;" id="send-btn">Dosyayı Gönder</button>
+        <button class="btn btn-red" id="send-btn">Dosyayı Gönder</button>
     </div>
 
-    <a id="download-link">Dosyayı İndir</a>
+    <a id="download-link" style="display:none;">📥 Dosyayı İndir</a>
 </div>
 
 <script>
@@ -48,52 +53,86 @@
     const peerIdInput = document.getElementById('peer-id-input');
     const transferArea = document.getElementById('transfer-area');
 
-    // PeerJS Yapılandırması (STUN sunucuları bağlantıyı garantiye alır)
+    // PeerJS Ayarları (STUN sunucuları ile)
     const peer = new Peer({
-        config: {
-            'iceServers': [
-                { url: 'stun:stun.l.google.com:19302' },
-                { url: 'stun:stun1.l.google.com:19302' },
-                { url: 'stun:stun2.l.google.com:19302' }
-            ]
-        }
+        config: {'iceServers': [{ url: 'stun:stun.l.google.com:19302' }, { url: 'stun:stun1.l.google.com:19302' }]}
     });
 
     let conn;
 
-    // Sistem açıldığında
+    // Başlangıç
     peer.on('open', (id) => {
         myIdEl.innerText = id;
-        statusEl.innerText = "Bağlantı hazır. Diğer cihazı bekleyin.";
+        statusEl.innerText = "Bağlantı ID'si alındı. Paylaşmaya hazırsınız.";
         new QRCode(document.getElementById("qrcode"), { text: id, width: 120, height: 120 });
     });
 
-    // BAĞLAN BUTONU
-    document.getElementById('connect-btn').onclick = () => {
-        const remoteId = peerIdInput.value.trim();
-        if (!remoteId) return alert("ID girin!");
-        
-        statusEl.innerText = "Bağlanıyor...";
-        conn = peer.connect(remoteId);
-        setupEvents();
-    };
+    // NFC YAZMA (Hata Ayıklamalı)
+    async function writeToNFC() {
+        if (!('NDEFReader' in window)) {
+            statusEl.innerText = "❌ Hata: Tarayıcı NFC desteklemiyor. Chrome kullanın.";
+            return;
+        }
 
-    // BİRİ BİZE BAĞLANDIĞINDA
-    peer.on('connection', (connection) => {
-        conn = connection;
+        try {
+            statusEl.innerText = "NFC Yazma Modu: Lütfen telefonu etikete dokundurun...";
+            const ndef = new NDEFReader();
+            await ndef.write(myIdEl.innerText);
+            statusEl.innerText = "✅ BAŞARILI: ID etikete yazıldı!";
+            alert("NFC Yazıldı!");
+        } catch (error) {
+            statusEl.innerText = "❌ Yazma Hatası: " + error.message;
+            console.error(error);
+        }
+    }
+
+    // NFC OKUMA (Hata Ayıklamalı)
+    async function readFromNFC() {
+        if (!('NDEFReader' in window)) {
+            statusEl.innerText = "❌ Hata: Tarayıcı NFC desteklemiyor.";
+            return;
+        }
+
+        try {
+            statusEl.innerText = "NFC Okuma Modu: Etiketi yaklaştırın...";
+            const ndef = new NDEFReader();
+            await ndef.scan();
+            
+            ndef.onreading = event => {
+                const decoder = new TextDecoder();
+                const readId = decoder.decode(event.message.records[0].data);
+                peerIdInput.value = readId;
+                statusEl.innerText = "✅ ID Okundu: " + readId;
+                connectToPeer(readId);
+            };
+        } catch (error) {
+            statusEl.innerText = "❌ Okuma Hatası: " + error.message;
+        }
+    }
+
+    // BAĞLANTI MANTIĞI
+    function connectToPeer(id) {
+        if (!id) return;
+        statusEl.innerText = "Bağlanılıyor: " + id;
+        if(conn) conn.close();
+        conn = peer.connect(id.trim());
+        setupEvents();
+    }
+
+    document.getElementById('connect-btn').onclick = () => connectToPeer(peerIdInput.value);
+
+    peer.on('connection', (c) => {
+        conn = c;
         setupEvents();
         statusEl.innerText = "Cihaz bağlandı!";
     });
 
-    // BAĞLANTI OLAYLARI
     function setupEvents() {
         conn.on('open', () => {
-            statusEl.innerText = "Bağlantı Kuruldu! Dosya seçebilirsiniz.";
+            statusEl.innerText = "✅ Bağlantı Kuruldu! Dosya seçebilirsiniz.";
             transferArea.style.display = "block";
         });
-
         conn.on('data', (data) => {
-            statusEl.innerText = "Dosya alındı!";
             const blob = new Blob([data.file]);
             const url = URL.createObjectURL(blob);
             const dl = document.getElementById('download-link');
@@ -101,53 +140,25 @@
             dl.download = data.filename;
             dl.style.display = "block";
             dl.innerText = "📥 İndir: " + data.filename;
-        });
-
-        conn.on('error', (err) => {
-            statusEl.innerText = "Hata: " + err;
+            statusEl.innerText = "✅ Dosya başarıyla alındı!";
         });
     }
 
     // DOSYA GÖNDERME
     document.getElementById('send-btn').onclick = () => {
         const file = document.getElementById('file-input').files[0];
-        if (!file) return alert("Dosya seçin!");
-        
+        if (!file) return;
         statusEl.innerText = "Gönderiliyor...";
         const reader = new FileReader();
         reader.onload = () => {
             conn.send({ file: reader.result, filename: file.name });
-            statusEl.innerText = "Başarıyla gönderildi!";
+            statusEl.innerText = "✅ Dosya gönderildi!";
         };
         reader.readAsArrayBuffer(file);
     };
 
-    // NFC İŞLEMLERİ
-    async function writeToNFC() {
-        try {
-            const ndef = new NDEFReader();
-            await ndef.write(myIdEl.innerText);
-            statusEl.innerText = "NFC Yazıldı!";
-        } catch (e) { statusEl.innerText = "NFC Yazma Hatası: " + e.message; }
-    }
-
-    async function readFromNFC() {
-        try {
-            const ndef = new NDEFReader();
-            await ndef.scan();
-            ndef.onreading = event => {
-                const decoder = new TextDecoder();
-                const id = decoder.decode(event.message.records[0].data);
-                peerIdInput.value = id;
-                document.getElementById('connect-btn').click();
-            };
-        } catch (e) { statusEl.innerText = "NFC Okuma Hatası: " + e.message; }
-    }
-
-    // PeerJS Genel Hataları
     peer.on('error', (err) => {
-        statusEl.innerText = "Sistem Hatası: " + err.type;
-        console.error(err);
+        statusEl.innerText = "⚠️ Sistem Hatası: " + err.type;
     });
 </script>
 </body>
