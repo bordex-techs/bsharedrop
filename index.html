@@ -3,110 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salla ve Bağlan PRO</title>
+    <title>Akıllı QR Paylaşım</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; text-align: center; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: #1e293b; padding: 30px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 90%; max-width: 400px; border: 1px solid #334155; }
-        .status-pill { background: #334155; padding: 10px 20px; border-radius: 50px; display: inline-block; margin: 15px 0; font-size: 0.85em; transition: 0.3s; }
-        .shake-active { background: #22c55e !important; box-shadow: 0 0 20px #22c55e; }
-        .btn { background: #3b82f6; color: white; border: none; padding: 16px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; font-size: 1rem; }
-        #transfer-area { margin-top: 20px; padding-top: 20px; border-top: 1px solid #334155; }
-        #download-link { display: none; margin-top: 20px; color: #60a5fa; text-decoration: none; font-weight: bold; border: 2px dashed #60a5fa; padding: 10px; border-radius: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; text-align: center; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        #qrcode { display: flex; justify-content: center; margin: 20px 0; }
+        .status { background: #edf2f7; padding: 15px; border-radius: 10px; margin: 15px 0; font-weight: bold; color: #2d3748; }
+        .btn { background: #3182ce; color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; cursor: pointer; font-weight: bold; }
+        #transfer-area { display: none; border-top: 2px solid #eee; padding-top: 20px; }
+        input[type="file"] { margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1 style="margin-top:0;">Fırlat-At 🚀</h1>
-    <div id="status-pill" class="status-pill">Sistem Başlatılıyor...</div>
+<div class="card">
+    <h2>Hızlı Bağlan 🚀</h2>
+    <div id="status" class="status">Sistem başlatılıyor...</div>
     
-    <div id="id-display" style="font-size: 0.7em; opacity: 0.5; margin-bottom: 20px;">ID: ...</div>
-
-    <button class="btn" id="start-btn">Sallama Sensörünü Aç</button>
-
-    <div id="transfer-area" style="display:none;">
-        <input type="file" id="file-input" style="width:100%; margin-bottom:15px;">
-        <button class="btn" style="background:#ef4444;" id="send-btn">Dosyayı Gönder</button>
+    <div id="my-info">
+        <p style="font-size: 0.8em; color: #666;">Diğer telefon bu QR'ı taratınca anında bağlanır:</p>
+        <div id="qrcode"></div>
+        <p id="my-id-display" style="font-size: 0.7em; color: #aaa;"></p>
     </div>
 
-    <a id="download-link">📥 Dosyayı İndir</a>
+    <div id="transfer-area">
+        <input type="file" id="file-input">
+        <button class="btn" style="background: #38a169;" id="send-btn">Dosyayı Gönder</button>
+    </div>
+
+    <a id="download-link" style="display:none; margin-top:20px; display:block; color: #3182ce; font-weight:bold;"></a>
 </div>
 
 <script>
-    const statusPill = document.getElementById('status-pill');
-    const startBtn = document.getElementById('start-btn');
-    const idDisplay = document.getElementById('id-display');
+    const statusEl = document.getElementById('status');
+    const myIdDisplay = document.getElementById('my-id-display');
+    const transferArea = document.getElementById('transfer-area');
     
-    let peer = new Peer();
-    let conn;
-    let myId = "";
-
-    peer.on('open', (id) => {
-        myId = id;
-        idDisplay.innerText = "Senin ID: " + id;
-        statusPill.innerText = "Sistem hazır. Butona bas!";
+    // 1. PeerJS Yapılandırması
+    const peer = new Peer({
+        config: {'iceServers': [{ url: 'stun:stun.l.google.com:19302' }]}
     });
 
-    // SENSÖRÜ BAŞLAT
-    startBtn.onclick = async () => {
-        if (typeof DeviceMotionEvent.requestPermission === 'function') {
-            const permission = await DeviceMotionEvent.requestPermission();
-            if (permission !== 'granted') return alert("Sensör izni şart!");
+    let conn;
+
+    peer.on('open', (id) => {
+        myIdDisplay.innerText = "ID: " + id;
+        
+        // --- KRİTİK KISIM: Akıllı Link Oluşturma ---
+        // Sitenin şu anki URL'sini al ve sonuna ?join=ID ekle
+        const currentUrl = window.location.origin + window.location.pathname;
+        const smartLink = currentUrl + "?join=" + id;
+        
+        // QR Kodu bu akıllı linkle oluştur
+        new QRCode(document.getElementById("qrcode"), {
+            text: smartLink,
+            width: 180,
+            height: 180
+        });
+
+        statusEl.innerText = "QR Hazır! Tarat ve Bağlan.";
+
+        // --- OTOMATİK BAĞLANMA KONTROLÜ ---
+        // Eğer birisi bu linkle (ID ile) siteye girdiyse
+        const urlParams = new URLSearchParams(window.location.search);
+        const joinId = urlParams.get('join');
+        
+        if (joinId) {
+            statusEl.innerText = "Otomatik bağlanılıyor: " + joinId;
+            connectToPeer(joinId);
         }
-        
-        statusPill.innerText = "Şimdi her iki telefonu aynı anda salla!";
-        startBtn.innerText = "Dinleniyor...";
-        
-        window.addEventListener('devicemotion', handleMotion);
-    };
+    });
 
-    let isShaking = false;
-    function handleMotion(event) {
-        const acc = event.accelerationIncludingGravity;
-        const total = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
-
-        if (total > 25 && !isShaking) { // Hassasiyet eşiği
-            isShaking = true;
-            triggerShakeMatch();
-        }
-    }
-
-    async function triggerShakeMatch() {
-        statusPill.classList.add('shake-active');
-        statusPill.innerText = "Sallama Algılandı! ⚡";
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-
-        // --- YARATICI ÇÖZÜM: GEÇİCİ ODA MANTIĞI ---
-        // Burada gerçek bir sunucu yerine, PeerJS'in 'room' mantığını taklit ediyoruz.
-        // Genelde profesyonel bir uygulamada burada Firebase kullanılır.
-        // Ama biz manuel bir köprü kuralım:
-        
-        const roomName = "salla_baglan_oda_123"; // Test için sabit oda
-        
-        // Bu örnekte: Sallayan telefon kendi ID'sini "panoya" kopyalar.
-        // Eğer diğer telefon da sallandıysa, o da ID'yi panodan okumaya çalışır.
-        try {
-            await navigator.clipboard.writeText(myId);
-            // Karşı tarafın ID'sini yapıştırmasını isteyebiliriz veya
-            // Web üzerinden basit bir "aracı" kullanabiliriz.
-            
-            // Şimdilik en sağlam manuel otomatikleşme:
-            const targetId = prompt("Diğer telefonun ID'si kopyalandı mı? Sallayanın ID'sini buraya yapıştır:");
-            if (targetId) connectToPeer(targetId);
-        } catch (e) {
-            console.log("Clipboard hatası");
-        }
-
-        setTimeout(() => {
-            statusPill.classList.remove('shake-active');
-            isShaking = false;
-        }, 2000);
-    }
-
-    function connectToPeer(id) {
-        statusPill.innerText = "Bağlanılıyor...";
-        conn = peer.connect(id.trim());
+    function connectToPeer(targetId) {
+        conn = peer.connect(targetId);
         setupEvents();
     }
 
@@ -117,8 +88,8 @@
 
     function setupEvents() {
         conn.on('open', () => {
-            statusPill.innerText = "✅ BAĞLANDI!";
-            document.getElementById('transfer-area').style.display = "block";
+            statusEl.innerText = "✅ Bağlantı Kuruldu!";
+            transferArea.style.display = "block";
         });
 
         conn.on('data', (data) => {
@@ -127,8 +98,8 @@
             const dl = document.getElementById('download-link');
             dl.href = url;
             dl.download = data.filename;
-            dl.style.display = "block";
-            dl.innerText = "📥 İndir: " + data.filename;
+            dl.innerText = "📥 Dosyayı İndir: " + data.filename;
+            statusEl.innerText = "Dosya Alındı!";
         });
     }
 
@@ -138,10 +109,11 @@
         const reader = new FileReader();
         reader.onload = () => {
             conn.send({ file: reader.result, filename: file.name });
-            statusPill.innerText = "Gönderildi! 🚀";
+            statusEl.innerText = "Gönderildi! 🚀";
         };
         reader.readAsArrayBuffer(file);
     };
 </script>
 </body>
 </html>
+
