@@ -3,67 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sihirli Sonic Transfer PRO</title>
+    <title>Sonic Transfer PRO</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/quiet/quiet-js/quiet.js"></script>
     <style>
-        :root { --p: #8b5cf6; --s: #10b981; --bg: #0f172a; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; margin: 0; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: #1e293b; padding: 25px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 400px; text-align: center; border: 1px solid #334155; }
-        .status { background: #334155; padding: 12px; border-radius: 12px; margin: 15px 0; font-size: 0.85em; color: #e2e8f0; border-left: 4px solid var(--p); line-height: 1.4; }
-        #canvas-container { display: none; margin-top: 20px; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        canvas { background: white; border-radius: 12px; touch-action: none; width: 100%; max-width: 350px; height: 200px; cursor: crosshair; }
-        .btn { border: none; padding: 14px; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%; margin: 5px 0; font-size: 0.95em; }
-        .btn-sonic { background: linear-gradient(135deg, #ec4899, #8b5cf6); }
-        .btn-blue { background: var(--p); }
-        .btn-clear { background: #475569; padding: 8px; font-size: 0.8em; }
-        #qrcode { display: flex; justify-content: center; background: white; padding: 10px; border-radius: 10px; margin-bottom: 10px; }
-        #download-link { display: none; background: rgba(16, 185, 129, 0.1); color: var(--s); padding: 15px; border-radius: 12px; text-decoration: none; margin-top: 15px; font-weight: bold; border: 1px dashed var(--s); }
+        :root { --p: #8b5cf6; --bg: #0f172a; }
+        body { font-family: sans-serif; background: var(--bg); color: white; text-align: center; padding: 20px; }
+        .card { background: #1e293b; padding: 20px; border-radius: 20px; max-width: 400px; margin: auto; border: 1px solid #334155; }
+        .status { background: #334155; padding: 12px; border-radius: 10px; margin: 15px 0; font-size: 0.85em; border-left: 4px solid var(--p); }
+        canvas { background: white; border-radius: 10px; touch-action: none; width: 100%; height: 200px; margin-top: 10px; }
+        .btn { border: none; padding: 14px; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; width: 100%; margin: 5px 0; }
+        .btn-sonic { background: linear-gradient(to right, #ec4899, #8b5cf6); }
+        #qrcode { display: flex; justify-content: center; background: white; padding: 10px; border-radius: 10px; margin: 10px 0; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2 style="margin-top:0;">Sonic Transfer ⚡</h2>
-    <div id="status" class="status">Sistem hazır. Mikrofonu kullanmak için butona bas.</div>
+    <h2>Sonic Paylaşım 🔊</h2>
+    <div id="status" class="status">Sistem başlatılıyor...</div>
 
     <div id="setup-area">
-        <button class="btn btn-sonic" onclick="broadcastId()">🔊 Sesle ID Gönder (Yayınla)</button>
-        <button class="btn btn-sonic" style="filter: hue-rotate(180deg);" onclick="startListening()">🎤 Sesle Bağlan (Dinle)</button>
-        <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
+        <button class="btn btn-sonic" onclick="broadcastId()">🔊 Ses Yayını Yap</button>
+        <button class="btn btn-sonic" style="filter:hue-rotate(90deg);" onclick="startListening()">🎤 Ses Dinle ve Bağlan</button>
+        <hr style="opacity:0.1; margin:20px 0;">
         <div id="qrcode"></div>
-        <p style="font-size: 0.75em; color: #94a3b8;">Veya bu QR'ı diğer telefona okutun.</p>
     </div>
 
-    <div id="canvas-container">
-        <p style="margin: 0 0 10px 0; font-size: 0.8em; color: #94a3b8;">Canlı Çizim Tahtası:</p>
+    <div id="app-area" style="display:none;">
         <canvas id="live-canvas"></canvas>
-        <button class="btn btn-clear" onclick="clearCanvas()">Ekranı Temizle</button>
+        <button class="btn" style="background:#475569;" onclick="clearCanvas()">Temizle</button>
+        <input type="file" id="file-input" style="margin-top:20px; width:100%;">
+        <button class="btn" style="background:#10b981;" id="send-btn">Dosyayı Gönder</button>
     </div>
-
-    <div id="transfer-area" style="display:none; margin-top:15px; border-top: 1px solid #334155; padding-top: 15px;">
-        <input type="file" id="file-input" style="font-size: 0.8em; margin-bottom: 10px; width: 100%;">
-        <button class="btn btn-blue" id="send-btn">Dosyayı Gönder 🚀</button>
-    </div>
-
-    <a id="download-link">📥 Dosyayı Al (İndir)</a>
+    
+    <a id="download-link" style="display:none; color:#10b981; margin-top:20px; display:block;"></a>
 </div>
 
 <script>
     const statusEl = document.getElementById('status');
     const canvas = document.getElementById('live-canvas');
     const ctx = canvas.getContext('2d');
-    const transferArea = document.getElementById('transfer-area');
-    const canvasContainer = document.getElementById('canvas-container');
-
-    canvas.width = 350; canvas.height = 200;
-    ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#8b5cf6';
-
-    const peer = new Peer({ config: {'iceServers': [{ url: 'stun:stun.l.google.com:19302' }]} });
-    let conn;
-    let myId = "";
+    const peer = new Peer();
+    let myId, conn;
 
     // Quiet.js Başlatma
     Quiet.init({
@@ -74,106 +57,94 @@
 
     peer.on('open', (id) => {
         myId = id;
-        const smartLink = window.location.origin + window.location.pathname + "?join=" + id;
-        new QRCode(document.getElementById("qrcode"), { text: smartLink, width: 140, height: 140 });
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('join')) connectToPeer(urlParams.get('join'));
+        new QRCode(document.getElementById("qrcode"), { 
+            text: window.location.href.split('?')[0] + "?join=" + id, 
+            width: 150, height: 150 
+        });
+        statusEl.innerText = "Hazır! Sesle bağlanmayı dene.";
+        if (new URLSearchParams(window.location.search).get('join')) connectToPeer(new URLSearchParams(window.location.search).get('join'));
     });
 
-    // --- SESLE EŞLEŞME (SONIC) ---
+    // --- SESLE EŞLEŞME (MİKROFON DÜZELTMELİ) ---
     async function broadcastId() {
-        if (Quiet.audioContext && Quiet.audioContext.state === 'suspended') await Quiet.audioContext.resume();
-        try {
-            const transmit = Quiet.transmitter({profile: "ultrasonic-experimental"});
-            transmit.transmit(Quiet.str2ab(myId));
-            statusEl.innerText = "🔊 Ses dalgası yayılıyor... Telefonları yaklaştırın.";
-            setTimeout(() => statusEl.innerText = "Yayın tamamlandı.", 6000);
-        } catch(e) { statusEl.innerText = "❌ Hata: Mikrofon/Hoparlör erişimi sağlanamadı."; }
+        if (Quiet.audioContext.state === 'suspended') await Quiet.audioContext.resume();
+        const transmitter = Quiet.transmitter({profile: "ultrasonic-experimental"});
+        transmitter.transmit(Quiet.str2ab(myId));
+        statusEl.innerText = "🔊 Ses gönderiliyor...";
     }
 
     async function startListening() {
-        if (Quiet.audioContext && Quiet.audioContext.state === 'suspended') await Quiet.audioContext.resume();
-        statusEl.innerText = "🎤 Dinleniyor... Diğer telefondan 'Ses Gönder'e basın.";
-        
-        Quiet.receiver({
-            profile: "ultrasonic-experimental",
-            onReceive: (payload) => {
-                const receivedId = Quiet.ab2str(payload);
-                statusEl.innerText = "✅ Ses kodu çözüldü!";
-                connectToPeer(receivedId);
-            },
-            onReceiverError: (err) => { statusEl.innerText = "❌ Mikrofon İzni Gerekli!"; }
-        });
+        try {
+            // Zorla mikrofon izni iste
+            await navigator.mediaDevices.getUserMedia({ audio: true });
+            if (Quiet.audioContext.state === 'suspended') await Quiet.audioContext.resume();
+            
+            statusEl.innerText = "🎤 Dinleniyor... Diğer telden yayını aç.";
+            Quiet.receiver({
+                profile: "ultrasonic-experimental",
+                onReceive: (p) => { connectToPeer(Quiet.ab2str(p)); statusEl.innerText = "Bağlanıyor..."; },
+                onReceiverError: () => { statusEl.innerText = "Mikrofon hatası!"; }
+            });
+        } catch (err) {
+            statusEl.innerText = "❌ Mikrofon izni reddedildi!";
+        }
     }
 
-    // --- BAĞLANTI VE TRANSFER ---
+    // --- BAĞLANTI VE TUVAL ---
     function connectToPeer(id) {
-        statusEl.innerText = "Bağlantı kuruluyor...";
         conn = peer.connect(id);
         setupEvents();
     }
-
     peer.on('connection', (c) => { conn = c; setupEvents(); });
 
     function setupEvents() {
         conn.on('open', () => {
-            statusEl.innerText = "✅ BAĞLANDI!";
+            statusEl.innerText = "✅ Bağlandı!";
             document.getElementById('setup-area').style.display = 'none';
-            transferArea.style.display = 'block';
-            canvasContainer.style.display = 'block';
+            document.getElementById('app-area').style.display = 'block';
         });
-
-        conn.on('data', (data) => {
-            if (data.type === 'draw') draw(data.x, data.y, data.isNewPath, false);
-            else if (data.type === 'clear') ctx.clearRect(0, 0, canvas.width, canvas.height);
-            else {
-                const blob = new Blob([data.file]);
-                const url = URL.createObjectURL(blob);
-                const dl = document.getElementById('download-link');
-                dl.href = url; dl.download = data.filename;
-                dl.style.display = "block";
-                dl.innerText = "📥 Dosyayı İndir: " + data.filename;
-                statusEl.innerText = "🎉 Yeni bir dosya aldın!";
-            }
+        conn.on('data', (d) => {
+            if (d.type === 'draw') draw(d.x, d.y, d.isNew, false);
+            else if (d.type === 'clear') ctx.clearRect(0,0,350,200);
+            else handleFile(d);
         });
     }
 
-    // --- CANLI ÇİZİM ---
+    // Çizim
+    canvas.width = 350; canvas.height = 200;
+    ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#8b5cf6';
     let drawing = false;
-    function draw(x, y, isNewPath, shouldSend) {
-        if (isNewPath) ctx.beginPath();
-        ctx.lineTo(x, y);
-        ctx.stroke();
-        if (shouldSend && conn && conn.open) conn.send({ type: 'draw', x: x, y: y, isNewPath: isNewPath });
+    function draw(x, y, isNew, send) {
+        if (isNew) ctx.beginPath();
+        ctx.lineTo(x, y); ctx.stroke();
+        if (send && conn) conn.send({type:'draw', x, y, isNew});
     }
-
     function getPos(e) {
-        const rect = canvas.getBoundingClientRect();
-        const cx = e.touches ? e.touches[0].clientX : e.clientX;
-        const cy = e.touches ? e.touches[0].clientY : e.clientY;
-        return { x: cx - rect.left, y: cy - rect.top };
+        const r = canvas.getBoundingClientRect();
+        const c = e.touches ? e.touches[0] : e;
+        return { x: c.clientX - r.left, y: c.clientY - r.top };
     }
+    canvas.onmousedown = (e) => { drawing = true; draw(getPos(e).x, getPos(e).y, true, true); };
+    canvas.onmousemove = (e) => { if(drawing) draw(getPos(e).x, getPos(e).y, false, true); };
+    canvas.onmouseup = () => drawing = false;
+    canvas.ontouchstart = (e) => { e.preventDefault(); drawing = true; draw(getPos(e).x, getPos(e).y, true, true); };
+    canvas.ontouchmove = (e) => { e.preventDefault(); if(drawing) draw(getPos(e).x, getPos(e).y, false, true); };
+    canvas.ontouchend = () => drawing = false;
+    function clearCanvas() { ctx.clearRect(0,0,350,200); conn.send({type:'clear'}); }
 
-    canvas.addEventListener('mousedown', (e) => { drawing = true; const p = getPos(e); draw(p.x, p.y, true, true); });
-    canvas.addEventListener('mousemove', (e) => { if (drawing) { const p = getPos(e); draw(p.x, p.y, false, true); } });
-    canvas.addEventListener('mouseup', () => drawing = false);
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); drawing = true; const p = getPos(e); draw(p.x, p.y, true, true); });
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (drawing) { const p = getPos(e); draw(p.x, p.y, false, true); } });
-    canvas.addEventListener('touchend', () => drawing = false);
-
-    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); if (conn) conn.send({ type: 'clear' }); }
-
+    // Dosya
+    function handleFile(d) {
+        const url = URL.createObjectURL(new Blob([d.file]));
+        const dl = document.getElementById('download-link');
+        dl.href = url; dl.download = d.filename; dl.innerText = "📥 Dosyayı İndir: " + d.filename; dl.style.display = "block";
+    }
     document.getElementById('send-btn').onclick = () => {
-        const file = document.getElementById('file-input').files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = () => {
-            conn.send({ file: reader.result, filename: file.name });
-            statusEl.innerText = "Dosya gönderildi! 🚀";
-        };
-        reader.readAsArrayBuffer(file);
+        const f = document.getElementById('file-input').files[0];
+        const r = new FileReader();
+        r.onload = () => conn.send({ file: r.result, filename: f.name });
+        r.readAsArrayBuffer(f);
     };
 </script>
 </body>
 </html>
+
