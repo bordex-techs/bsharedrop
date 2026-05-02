@@ -3,224 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ajan Transfer 🕵️‍♀️</title>
+    <title>Bordex Süper Transfer</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --bg: #0f172a; --panel: #1e293b; --p: #3b82f6; --text: #f8fafc; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; }
-        .card { background: var(--panel); padding: 25px; border-radius: 20px; width: 100%; max-width: 420px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #334155; }
-        .status { background: #334155; padding: 12px; border-radius: 10px; margin-bottom: 20px; text-align: center; font-weight: bold; }
+        :root { --bg: #0f172a; --panel: #1e293b; --p: #6366f1; --s: #22c55e; }
+        body { font-family: sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .card { background: var(--panel); padding: 20px; border-radius: 20px; width: 100%; max-width: 450px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .status { background: #334155; padding: 10px; border-radius: 10px; margin-bottom: 15px; font-size: 0.9em; border-left: 4px solid var(--p); text-align: center; }
         
-        /* Renk Şifresi Tasarımı */
-        .color-box { width: 50px; height: 50px; border-radius: 12px; display: inline-block; margin: 5px; cursor: pointer; transition: 0.2s; border: 3px solid transparent; }
-        .color-box:active { transform: scale(0.9); }
-        .color-display { display: flex; justify-content: center; gap: 10px; margin: 15px 0; background: #0f172a; padding: 15px; border-radius: 15px; }
+        /* Renk Paneli */
+        .color-display { display: flex; justify-content: center; gap: 8px; margin: 10px 0; background: #0f172a; padding: 10px; border-radius: 12px; }
+        .color-box { width: 40px; height: 40px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .color-box:hover { transform: scale(1.1); }
         
-        .btn { background: var(--p); color: white; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn:disabled { background: #475569; cursor: not-allowed; }
+        #qrcode { display: flex; justify-content: center; background: white; padding: 10px; border-radius: 12px; margin: 15px 0; }
         
-        input[type="text"], input[type="file"], input[type="time"] { width: 100%; padding: 10px; border-radius: 8px; border: none; margin-bottom: 10px; box-sizing: border-box; background: #334155; color: white; }
+        input, button { width: 100%; padding: 12px; border-radius: 10px; border: none; margin-bottom: 10px; box-sizing: border-box; }
+        input { background: #334155; color: white; }
+        .btn-p { background: var(--p); color: white; font-weight: bold; cursor: pointer; }
+        .btn-s { background: var(--s); color: white; font-weight: bold; cursor: pointer; }
         
-        .feature-box { background: rgba(59, 130, 246, 0.1); border: 1px dashed var(--p); padding: 15px; border-radius: 12px; margin-top: 15px; }
-        .hidden-msg-alert { background: #f59e0b; color: black; padding: 10px; border-radius: 8px; font-weight: bold; display: none; margin-top: 10px; cursor: pointer; text-align: center;}
+        .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .badge { background: rgba(99, 102, 241, 0.2); padding: 10px; border-radius: 10px; font-size: 0.8em; border: 1px solid var(--p); }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2 style="margin-top:0; text-align:center;">Ajan Transfer 🕵️‍♀️</h2>
-    <div id="status" class="status">Sistem Yükleniyor...</div>
+    <h2 style="margin:0; text-align:center;">Süper Transfer ⚡</h2>
+    <div id="status" class="status">Başlatılıyor...</div>
 
     <div id="setup-area">
-        <p style="text-align:center; font-size: 0.9em; color: #94a3b8;">Senin Renk Şifren (Bunu diğer telefona gir):</p>
-        <div class="color-display" id="my-colors"></div>
+        <div id="qrcode"></div>
+        <p style="font-size: 0.8em; text-align:center; color:#94a3b8;">ID: <strong id="my-id-display" style="color:white;">...</strong></p>
         
-        <hr style="border-color:#334155; margin: 20px 0;">
-        
-        <p style="text-align:center; font-size: 0.9em; color: #94a3b8;">Bağlanmak için diğer telefonun renklerini tuşla:</p>
-        <div style="text-align:center;">
-            <div class="color-box" style="background:#ef4444;" onclick="addColorCode('R')"></div>
-            <div class="color-box" style="background:#3b82f6;" onclick="addColorCode('B')"></div>
-            <div class="color-box" style="background:#22c55e;" onclick="addColorCode('G')"></div>
-            <div class="color-box" style="background:#eab308;" onclick="addColorCode('Y')"></div>
+        <input type="text" id="peer-id-input" placeholder="Bağlanılacak ID'yi yaz...">
+        <button class="btn-p" onclick="connectToPeer(document.getElementById('peer-id-input').value)">Manuel Bağlan</button>
+
+        <div style="border-top: 1px solid #334155; margin-top:15px; padding-top:15px;">
+            <p style="font-size: 0.75em; text-align:center; color:#94a3b8;">Veya Renk Şifresini Kullan:</p>
+            <div class="color-display" id="my-colors"></div>
+            <div style="text-align:center;">
+                <div class="color-box" style="background:#ef4444;" onclick="addColor('R')"></div>
+                <div class="color-box" style="background:#3b82f6;" onclick="addColor('B')"></div>
+                <div class="color-box" style="background:#22c55e;" onclick="addColor('G')"></div>
+                <div class="color-box" style="background:#eab308;" onclick="addColor('Y')"></div>
+            </div>
+            <p id="input-dots" style="text-align:center; letter-spacing:8px; margin:5px 0;">____</p>
         </div>
-        <p style="text-align:center; letter-spacing: 5px; font-size: 1.2em;" id="input-colors">____</p>
-        <button class="btn" onclick="clearColors()" style="background:#475569;">Renkleri Sil</button>
     </div>
 
-    <div id="transfer-area" style="display:none;">
+    <div id="app-area" style="display:none;">
         <input type="file" id="file-input">
         
-        <input type="text" id="secret-msg" placeholder="Fotoğrafın içine gizli mesaj yaz (İsteğe bağlı)...">
-        
-        <div class="feature-box">
-            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                <input type="checkbox" id="use-timer" onchange="document.getElementById('time-input').style.display = this.checked ? 'block' : 'none'">
-                <strong>Zaman Kapsülü Kullan (İsteğe Bağlı)</strong>
-            </label>
-            <input type="time" id="time-input" style="display:none; margin-top: 10px;">
+        <div class="feature-grid">
+            <div class="badge">
+                <input type="text" id="secret-msg" placeholder="Gizli Mesaj..." style="margin:0; font-size:0.8em; padding:5px;">
+            </div>
+            <div class="badge">
+                <p style="margin:0 0 5px 0; font-size:0.7em;">Zaman Kapsülü:</p>
+                <input type="time" id="unlock-time" style="margin:0; font-size:0.8em; padding:2px;">
+            </div>
         </div>
 
-        <button class="btn" id="send-btn" style="background:#10b981; font-size:1.1em; margin-top:20px;">Dosyayı Gizlice Gönder 🚀</button>
+        <button class="btn-s" id="send-btn" style="margin-top:15px;">Güvenli Gönder 🚀</button>
     </div>
 
-    <div id="receive-area" style="display:none; text-align:center;">
-        <h3 id="timer-display" style="color: #ef4444; font-size: 2em; margin: 10px 0;"></h3>
-        <a id="download-link" class="btn" style="display:block; text-decoration:none; background:#10b981;">📥 Dosyayı İndir</a>
-        <div id="hidden-msg-btn" class="hidden-msg-alert" onclick="showSecret()">🔍 Gizli Mesaj Bulundu! Tıkla ve Oku</div>
+    <div id="receive-area" style="display:none;">
+        <h3 id="timer-display" style="color:#ef4444; text-align:center;"></h3>
+        <a id="download-link" class="btn-s" style="display:block; text-align:center; text-decoration:none;">📥 Dosyayı İndir</a>
+        <button id="msg-btn" class="btn-p" style="display:none; background:#f59e0b; margin-top:10px;" onclick="alert('🕵️ Mesaj: ' + receivedMsg)">🔍 Gizli Mesajı Oku</button>
     </div>
 </div>
 
 <script>
     const statusEl = document.getElementById('status');
     const colorMap = { 'R': '#ef4444', 'B': '#3b82f6', 'G': '#22c55e', 'Y': '#eab308' };
-    
-    // Rastgele 4 renkli ID oluştur
-    const colors = ['R', 'B', 'G', 'Y'];
-    let myColorId = "";
-    for(let i=0; i<4; i++) myColorId += colors[Math.floor(Math.random() * colors.length)];
-    
-    // PeerJS'i kendi renk kodumuzla başlatıyoruz!
-    const peer = new Peer('agent-' + myColorId);
+    let inputCode = "";
+    let receivedMsg = "";
     let conn;
-    let receivedSecretMsg = "";
+
+    // Rastgele Renk ID Oluştur
+    const chars = ['R', 'B', 'G', 'Y'];
+    let myColorCode = "";
+    for(let i=0; i<4; i++) myColorCode += chars[Math.floor(Math.random() * 4)];
+
+    const peer = new Peer('bt-' + myColorCode);
 
     peer.on('open', (id) => {
-        statusEl.innerText = "Sistem Hazır!";
-        const myColorsDiv = document.getElementById('my-colors');
-        for(let char of myColorId) {
-            myColorsDiv.innerHTML += `<div class="color-box" style="background:${colorMap[char]}; pointer-events:none;"></div>`;
-        }
+        statusEl.innerText = "Hazır!";
+        document.getElementById('my-id-display').innerText = id;
+        
+        // QR Kod (Eski Özellik)
+        const link = window.location.origin + window.location.pathname + "?join=" + id;
+        new QRCode(document.getElementById("qrcode"), { text: link, width: 150, height: 150 });
+
+        // Renk Şifresi Gösterimi (Yeni Özellik)
+        const colorsDiv = document.getElementById('my-colors');
+        for(let c of myColorCode) colorsDiv.innerHTML += `<div class="color-box" style="background:${colorMap[c]}; cursor:default;"></div>`;
+
+        // URL'den otomatik bağlanma
+        const joinId = new URLSearchParams(window.location.search).get('join');
+        if (joinId) connectToPeer(joinId);
     });
 
-    // --- ÖZELLİK 2: RENKLE EŞLEŞME MANTIĞI ---
-    let inputCode = "";
-    function addColorCode(c) {
+    function addColor(c) {
         if(inputCode.length < 4) {
             inputCode += c;
-            updateInputDisplay();
-            if(inputCode.length === 4) connectToPeer('agent-' + inputCode);
+            document.getElementById('input-dots').innerText = "🟢 ".repeat(inputCode.length) + "__ ".repeat(4 - inputCode.length);
+            if(inputCode.length === 4) connectToPeer('bt-' + inputCode);
         }
     }
-    
-    function updateInputDisplay() {
-        let displayHtml = "";
-        for(let i=0; i<4; i++) {
-            if(i < inputCode.length) displayHtml += `🟢 `; // Giren renkleri nokta olarak göster
-            else displayHtml += `_ `;
-        }
-        document.getElementById('input-colors').innerText = displayHtml;
-    }
 
-    function clearColors() {
-        inputCode = "";
-        updateInputDisplay();
-    }
-
-    // --- BAĞLANTI ---
-    function connectToPeer(targetId) {
-        statusEl.innerText = "Şifre doğrulandı, bağlanılıyor...";
-        conn = peer.connect(targetId);
+    function connectToPeer(id) {
+        if(!id) return;
+        statusEl.innerText = "Bağlanılıyor...";
+        conn = peer.connect(id);
         setupEvents();
     }
 
-    peer.on('connection', (c) => {
-        conn = c;
-        setupEvents();
-    });
+    peer.on('connection', (c) => { conn = c; setupEvents(); });
 
     function setupEvents() {
         conn.on('open', () => {
-            statusEl.innerText = "✅ Güvenli Bağlantı Kuruldu!";
+            statusEl.innerText = "✅ Bağlantı Kuruldu!";
             document.getElementById('setup-area').style.display = 'none';
-            document.getElementById('transfer-area').style.display = 'block';
+            document.getElementById('app-area').style.display = 'block';
         });
 
         conn.on('data', (data) => {
-            document.getElementById('setup-area').style.display = 'none';
-            document.getElementById('transfer-area').style.display = 'none';
+            document.getElementById('app-area').style.display = 'none';
             document.getElementById('receive-area').style.display = 'block';
             
-            const dl = document.getElementById('download-link');
-            const timerDisplay = document.getElementById('timer-display');
-            const msgBtn = document.getElementById('hidden-msg-btn');
-            
-            // Gizli mesaj var mı kontrol et
-            if(data.secret) {
-                receivedSecretMsg = data.secret;
-                msgBtn.style.display = "block";
-            } else {
-                msgBtn.style.display = "none";
-            }
+            receivedMsg = data.secret || "";
+            document.getElementById('msg-btn').style.display = receivedMsg ? "block" : "none";
 
-            const url = URL.createObjectURL(new Blob([data.file]));
-            dl.href = url;
+            const dl = document.getElementById('download-link');
+            dl.href = URL.createObjectURL(new Blob([data.file]));
             dl.download = data.filename;
 
-            // Zaman Kapsülü Kontrolü
-            if(data.unlockTime) {
-                dl.style.pointerEvents = "none";
-                dl.style.background = "#475569";
-                dl.innerText = "🔒 Dosya Kilitli";
-                statusEl.innerText = "Zaman Kapsülü Alındı!";
-                
-                const interval = setInterval(() => {
-                    const now = new Date().getTime();
-                    const distance = data.unlockTime - now;
-                    
-                    if(distance < 0) {
-                        clearInterval(interval);
-                        timerDisplay.innerText = "KİLİT AÇILDI!";
-                        dl.style.pointerEvents = "auto";
-                        dl.style.background = "#10b981";
-                        dl.innerText = "📥 Dosyayı İndir";
+            if(data.timer) {
+                dl.style.pointerEvents = "none"; dl.style.opacity = "0.5";
+                const itv = setInterval(() => {
+                    const diff = data.timer - new Date().getTime();
+                    if(diff <= 0) {
+                        clearInterval(itv);
+                        document.getElementById('timer-display').innerText = "KİLİT AÇILDI!";
+                        dl.style.pointerEvents = "auto"; dl.style.opacity = "1";
                     } else {
-                        const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                        const s = Math.floor((distance % (1000 * 60)) / 1000);
-                        timerDisplay.innerText = `Açılmasına: ${h}s ${m}d ${s}sn`;
+                        document.getElementById('timer-display').innerText = Math.ceil(diff/1000) + " saniye bekleyin...";
                     }
                 }, 1000);
-            } else {
-                timerDisplay.innerText = "";
-                statusEl.innerText = "Dosya Alındı!";
             }
         });
     }
 
-    function showSecret() {
-        alert("🕵️‍♀️ GİZLİ MESAJ:\n\n" + receivedSecretMsg);
-    }
-
-    // --- DOSYA GÖNDERME ---
     document.getElementById('send-btn').onclick = () => {
         const file = document.getElementById('file-input').files[0];
-        if (!file) return alert("Önce bir dosya seç!");
-
-        const secretText = document.getElementById('secret-msg').value;
-        const useTimer = document.getElementById('use-timer').checked;
-        const timeInput = document.getElementById('time-input').value;
-
-        let unlockTime = null;
-        if(useTimer && timeInput) {
-            const now = new Date();
-            const [hours, minutes] = timeInput.split(':');
-            const targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
-            if(targetDate < now) targetDate.setDate(targetDate.getDate() + 1); // Eğer saat geçtiyse yarına kur
-            unlockTime = targetDate.getTime();
+        if(!file) return alert("Dosya seç!");
+        
+        const timeVal = document.getElementById('unlock-time').value;
+        let timer = null;
+        if(timeVal) {
+            const [h, m] = timeVal.split(':');
+            const d = new Date(); d.setHours(h); d.setMinutes(m); d.setSeconds(0);
+            if(d < new Date()) d.setDate(d.getDate() + 1);
+            timer = d.getTime();
         }
 
-        statusEl.innerText = "Şifreleniyor ve gönderiliyor...";
-        
         const reader = new FileReader();
         reader.onload = () => {
-            conn.send({ 
-                file: reader.result, 
+            conn.send({
+                file: reader.result,
                 filename: file.name,
-                secret: secretText,
-                unlockTime: unlockTime
+                secret: document.getElementById('secret-msg').value,
+                timer: timer
             });
-            statusEl.innerText = "GÖREV BAŞARILI! 🚀";
+            statusEl.innerText = "Gönderildi! 🚀";
         };
         reader.readAsArrayBuffer(file);
     };
