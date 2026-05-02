@@ -3,182 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sonic Transfer Ultra</title>
+    <title>Ajan Transfer 🕵️‍♀️</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/quiet/quiet-js/quiet.js"></script>
     <style>
-        :root { --p: #8b5cf6; --bg: #0f172a; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; text-align: center; padding: 15px; margin: 0; }
-        .card { background: #1e293b; padding: 20px; border-radius: 24px; max-width: 400px; margin: auto; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .status { background: #334155; padding: 12px; border-radius: 12px; margin: 15px 0; font-size: 0.85em; border-left: 4px solid var(--p); color: #cbd5e1; }
+        :root { --bg: #0f172a; --panel: #1e293b; --p: #3b82f6; --text: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .card { background: var(--panel); padding: 25px; border-radius: 20px; width: 100%; max-width: 420px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #334155; }
+        .status { background: #334155; padding: 12px; border-radius: 10px; margin-bottom: 20px; text-align: center; font-weight: bold; }
         
-        /* QR KOD DÜZELTME: Basık olmaması için */
-        #qrcode-container { display: flex; justify-content: center; margin: 20px 0; }
-        #qrcode { background: white; padding: 15px; border-radius: 15px; display: inline-block; line-height: 0; }
-        #qrcode img { width: 180px !important; height: 180px !important; display: block; }
-
-        canvas { background: white; border-radius: 12px; touch-action: none; width: 100%; height: 220px; margin: 10px 0; border: 2px solid #334155; }
-        .btn { border: none; padding: 15px; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; width: 100%; margin: 8px 0; font-size: 1rem; transition: 0.3s; }
-        .btn-sonic { background: linear-gradient(135deg, #ec4899, #8b5cf6); box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3); }
-        .btn-sonic:active { transform: scale(0.98); }
-        #download-link { display: none; color: #10b981; margin-top: 20px; font-weight: bold; text-decoration: none; padding: 10px; border: 1px dashed; border-radius: 10px; }
+        /* Renk Şifresi Tasarımı */
+        .color-box { width: 50px; height: 50px; border-radius: 12px; display: inline-block; margin: 5px; cursor: pointer; transition: 0.2s; border: 3px solid transparent; }
+        .color-box:active { transform: scale(0.9); }
+        .color-display { display: flex; justify-content: center; gap: 10px; margin: 15px 0; background: #0f172a; padding: 15px; border-radius: 15px; }
+        
+        .btn { background: var(--p); color: white; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn:disabled { background: #475569; cursor: not-allowed; }
+        
+        input[type="text"], input[type="file"], input[type="time"] { width: 100%; padding: 10px; border-radius: 8px; border: none; margin-bottom: 10px; box-sizing: border-box; background: #334155; color: white; }
+        
+        .feature-box { background: rgba(59, 130, 246, 0.1); border: 1px dashed var(--p); padding: 15px; border-radius: 12px; margin-top: 15px; }
+        .hidden-msg-alert { background: #f59e0b; color: black; padding: 10px; border-radius: 8px; font-weight: bold; display: none; margin-top: 10px; cursor: pointer; text-align: center;}
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2 style="margin:0; font-size: 1.5rem;">Sonic & Live 🔊</h2>
-    <div id="status" class="status">Sistem başlatılıyor...</div>
+    <h2 style="margin-top:0; text-align:center;">Ajan Transfer 🕵️‍♀️</h2>
+    <div id="status" class="status">Sistem Yükleniyor...</div>
 
     <div id="setup-area">
-        <button class="btn btn-sonic" onclick="broadcastId()">🔊 Ses Yayını Yap</button>
-        <button class="btn btn-sonic" style="filter:hue-rotate(60deg);" onclick="startListening()">🎤 Sesle Bağlan (Dinle)</button>
-        <div id="qrcode-container"><div id="qrcode"></div></div>
-        <p style="font-size: 0.75em; color: #94a3b8;">QR kodu taratarak da bağlanabilirsiniz.</p>
+        <p style="text-align:center; font-size: 0.9em; color: #94a3b8;">Senin Renk Şifren (Bunu diğer telefona gir):</p>
+        <div class="color-display" id="my-colors"></div>
+        
+        <hr style="border-color:#334155; margin: 20px 0;">
+        
+        <p style="text-align:center; font-size: 0.9em; color: #94a3b8;">Bağlanmak için diğer telefonun renklerini tuşla:</p>
+        <div style="text-align:center;">
+            <div class="color-box" style="background:#ef4444;" onclick="addColorCode('R')"></div>
+            <div class="color-box" style="background:#3b82f6;" onclick="addColorCode('B')"></div>
+            <div class="color-box" style="background:#22c55e;" onclick="addColorCode('G')"></div>
+            <div class="color-box" style="background:#eab308;" onclick="addColorCode('Y')"></div>
+        </div>
+        <p style="text-align:center; letter-spacing: 5px; font-size: 1.2em;" id="input-colors">____</p>
+        <button class="btn" onclick="clearColors()" style="background:#475569;">Renkleri Sil</button>
     </div>
 
-    <div id="app-area" style="display:none;">
-        <canvas id="live-canvas"></canvas>
-        <button class="btn" style="background:#475569; padding: 8px; font-size: 0.8em;" onclick="clearCanvas()">Ekranı Temizle</button>
-        <div style="margin-top:20px; border-top: 1px solid #334155; padding-top:15px;">
-            <input type="file" id="file-input" style="width:100%; margin-bottom:10px; font-size: 0.8rem;">
-            <button class="btn" style="background:#10b981;" id="send-btn">Dosyayı Gönder 🚀</button>
+    <div id="transfer-area" style="display:none;">
+        <input type="file" id="file-input">
+        
+        <input type="text" id="secret-msg" placeholder="Fotoğrafın içine gizli mesaj yaz (İsteğe bağlı)...">
+        
+        <div class="feature-box">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                <input type="checkbox" id="use-timer" onchange="document.getElementById('time-input').style.display = this.checked ? 'block' : 'none'">
+                <strong>Zaman Kapsülü Kullan (İsteğe Bağlı)</strong>
+            </label>
+            <input type="time" id="time-input" style="display:none; margin-top: 10px;">
         </div>
+
+        <button class="btn" id="send-btn" style="background:#10b981; font-size:1.1em; margin-top:20px;">Dosyayı Gizlice Gönder 🚀</button>
     </div>
-    
-    <a id="download-link"></a>
+
+    <div id="receive-area" style="display:none; text-align:center;">
+        <h3 id="timer-display" style="color: #ef4444; font-size: 2em; margin: 10px 0;"></h3>
+        <a id="download-link" class="btn" style="display:block; text-decoration:none; background:#10b981;">📥 Dosyayı İndir</a>
+        <div id="hidden-msg-btn" class="hidden-msg-alert" onclick="showSecret()">🔍 Gizli Mesaj Bulundu! Tıkla ve Oku</div>
+    </div>
 </div>
 
 <script>
     const statusEl = document.getElementById('status');
-    const canvas = document.getElementById('live-canvas');
-    const ctx = canvas.getContext('2d');
-    const peer = new Peer();
-    let myId, conn;
-
-    // Quiet.js Başlatma Ayarları
-    Quiet.init({
-        profiles_prefix: "https://cdn.jsdelivr.net/gh/quiet/quiet-js/quiet-profiles.json",
-        memory_initializer_prefix: "https://cdn.jsdelivr.net/gh/quiet/quiet-js/",
-        libfec_prefix: "https://cdn.jsdelivr.net/gh/quiet/quiet-js/"
-    });
+    const colorMap = { 'R': '#ef4444', 'B': '#3b82f6', 'G': '#22c55e', 'Y': '#eab308' };
+    
+    // Rastgele 4 renkli ID oluştur
+    const colors = ['R', 'B', 'G', 'Y'];
+    let myColorId = "";
+    for(let i=0; i<4; i++) myColorId += colors[Math.floor(Math.random() * colors.length)];
+    
+    // PeerJS'i kendi renk kodumuzla başlatıyoruz!
+    const peer = new Peer('agent-' + myColorId);
+    let conn;
+    let receivedSecretMsg = "";
 
     peer.on('open', (id) => {
-        myId = id;
-        // QR Kod Kare Ayarı
-        new QRCode(document.getElementById("qrcode"), { 
-            text: window.location.href.split('?')[0] + "?join=" + id, 
-            width: 180, height: 180,
-            correctLevel : QRCode.CorrectLevel.H
-        });
-        statusEl.innerText = "Sistem Hazır! Sesle veya QR ile bağlan.";
-        
-        const joinParam = new URLSearchParams(window.location.search).get('join');
-        if (joinParam) connectToPeer(joinParam);
+        statusEl.innerText = "Sistem Hazır!";
+        const myColorsDiv = document.getElementById('my-colors');
+        for(let char of myColorId) {
+            myColorsDiv.innerHTML += `<div class="color-box" style="background:${colorMap[char]}; pointer-events:none;"></div>`;
+        }
     });
 
-    // --- SESLE EŞLEŞME FONKSİYONLARI ---
-    async function broadcastId() {
-        try {
-            // Ses motorunu her basışta uyandır
-            if (Quiet.audioContext.state === 'suspended') await Quiet.audioContext.resume();
-            
-            const transmitter = Quiet.transmitter({profile: "ultrasonic-experimental"});
-            transmitter.transmit(Quiet.str2ab(myId));
-            statusEl.innerText = "🔊 Ses gönderiliyor... Telefonları yaklaştırın.";
-            statusEl.style.borderLeftColor = "#ec4899";
-        } catch(e) { 
-            statusEl.innerText = "❌ Ses Hatası: Sayfayı yenileyip tekrar dene."; 
+    // --- ÖZELLİK 2: RENKLE EŞLEŞME MANTIĞI ---
+    let inputCode = "";
+    function addColorCode(c) {
+        if(inputCode.length < 4) {
+            inputCode += c;
+            updateInputDisplay();
+            if(inputCode.length === 4) connectToPeer('agent-' + inputCode);
         }
     }
-
-    async function startListening() {
-        try {
-            // Mikrofon izni iste ve ses motorunu uyandır
-            await navigator.mediaDevices.getUserMedia({ audio: true });
-            if (Quiet.audioContext.state === 'suspended') await Quiet.audioContext.resume();
-            
-            statusEl.innerText = "🎤 Dinleniyor... Diğer telefondan sesi aç.";
-            Quiet.receiver({
-                profile: "ultrasonic-experimental",
-                onReceive: (p) => { 
-                    const rid = Quiet.ab2str(p);
-                    statusEl.innerText = "✅ Kod alındı, bağlanılıyor..."; 
-                    connectToPeer(rid); 
-                },
-                onReceiverError: () => { statusEl.innerText = "⚠️ Ses algılanamadı."; }
-            });
-        } catch (err) {
-            statusEl.innerText = "❌ Mikrofon izni verilmedi!";
+    
+    function updateInputDisplay() {
+        let displayHtml = "";
+        for(let i=0; i<4; i++) {
+            if(i < inputCode.length) displayHtml += `🟢 `; // Giren renkleri nokta olarak göster
+            else displayHtml += `_ `;
         }
+        document.getElementById('input-colors').innerText = displayHtml;
     }
 
-    // --- BAĞLANTI VE TUVAL ---
-    function connectToPeer(id) {
-        conn = peer.connect(id);
+    function clearColors() {
+        inputCode = "";
+        updateInputDisplay();
+    }
+
+    // --- BAĞLANTI ---
+    function connectToPeer(targetId) {
+        statusEl.innerText = "Şifre doğrulandı, bağlanılıyor...";
+        conn = peer.connect(targetId);
         setupEvents();
     }
-    peer.on('connection', (c) => { conn = c; setupEvents(); });
+
+    peer.on('connection', (c) => {
+        conn = c;
+        setupEvents();
+    });
 
     function setupEvents() {
         conn.on('open', () => {
-            statusEl.innerText = "✅ Bağlantı Başarılı!";
+            statusEl.innerText = "✅ Güvenli Bağlantı Kuruldu!";
             document.getElementById('setup-area').style.display = 'none';
-            document.getElementById('app-area').style.display = 'block';
+            document.getElementById('transfer-area').style.display = 'block';
         });
-        conn.on('data', (d) => {
-            if (d.type === 'draw') draw(d.x, d.y, d.isNew, false);
-            else if (d.type === 'clear') ctx.clearRect(0,0,canvas.width,canvas.height);
-            else handleFile(d);
+
+        conn.on('data', (data) => {
+            document.getElementById('setup-area').style.display = 'none';
+            document.getElementById('transfer-area').style.display = 'none';
+            document.getElementById('receive-area').style.display = 'block';
+            
+            const dl = document.getElementById('download-link');
+            const timerDisplay = document.getElementById('timer-display');
+            const msgBtn = document.getElementById('hidden-msg-btn');
+            
+            // Gizli mesaj var mı kontrol et
+            if(data.secret) {
+                receivedSecretMsg = data.secret;
+                msgBtn.style.display = "block";
+            } else {
+                msgBtn.style.display = "none";
+            }
+
+            const url = URL.createObjectURL(new Blob([data.file]));
+            dl.href = url;
+            dl.download = data.filename;
+
+            // Zaman Kapsülü Kontrolü
+            if(data.unlockTime) {
+                dl.style.pointerEvents = "none";
+                dl.style.background = "#475569";
+                dl.innerText = "🔒 Dosya Kilitli";
+                statusEl.innerText = "Zaman Kapsülü Alındı!";
+                
+                const interval = setInterval(() => {
+                    const now = new Date().getTime();
+                    const distance = data.unlockTime - now;
+                    
+                    if(distance < 0) {
+                        clearInterval(interval);
+                        timerDisplay.innerText = "KİLİT AÇILDI!";
+                        dl.style.pointerEvents = "auto";
+                        dl.style.background = "#10b981";
+                        dl.innerText = "📥 Dosyayı İndir";
+                    } else {
+                        const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        const s = Math.floor((distance % (1000 * 60)) / 1000);
+                        timerDisplay.innerText = `Açılmasına: ${h}s ${m}d ${s}sn`;
+                    }
+                }, 1000);
+            } else {
+                timerDisplay.innerText = "";
+                statusEl.innerText = "Dosya Alındı!";
+            }
         });
     }
 
-    // Çizim Mantığı
-    canvas.width = 350; canvas.height = 220;
-    ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.strokeStyle = '#8b5cf6';
-    let drawing = false;
-
-    function draw(x, y, isNew, send) {
-        if (isNew) ctx.beginPath();
-        ctx.lineTo(x, y); ctx.stroke();
-        if (send && conn) conn.send({type:'draw', x, y, isNew});
+    function showSecret() {
+        alert("🕵️‍♀️ GİZLİ MESAJ:\n\n" + receivedSecretMsg);
     }
 
-    function getPos(e) {
-        const r = canvas.getBoundingClientRect();
-        const c = e.touches ? e.touches[0] : e;
-        return { x: c.clientX - r.left, y: c.clientY - r.top };
-    }
-
-    canvas.onmousedown = (e) => { drawing = true; draw(getPos(e).x, getPos(e).y, true, true); };
-    canvas.onmousemove = (e) => { if(drawing) draw(getPos(e).x, getPos(e).y, false, true); };
-    canvas.onmouseup = () => drawing = false;
-    canvas.ontouchstart = (e) => { e.preventDefault(); drawing = true; draw(getPos(e).x, getPos(e).y, true, true); };
-    canvas.ontouchmove = (e) => { e.preventDefault(); if(drawing) draw(getPos(e).x, getPos(e).y, false, true); };
-    canvas.ontouchend = () => drawing = false;
-    
-    function clearCanvas() { ctx.clearRect(0,0,canvas.width,canvas.height); if(conn) conn.send({type:'clear'}); }
-
-    // Dosya Transferi
-    function handleFile(d) {
-        const url = URL.createObjectURL(new Blob([d.file]));
-        const dl = document.getElementById('download-link');
-        dl.href = url; dl.download = d.filename; 
-        dl.innerText = "📥 İndir: " + d.filename; 
-        dl.style.display = "block";
-        statusEl.innerText = "🎉 Dosya Alındı!";
-    }
-
+    // --- DOSYA GÖNDERME ---
     document.getElementById('send-btn').onclick = () => {
-        const f = document.getElementById('file-input').files[0];
-        if(!f) return alert("Dosya seç!");
-        const r = new FileReader();
-        r.onload = () => {
-            conn.send({ file: r.result, filename: f.name });
-            statusEl.innerText = "Dosya fırlatıldı! 🚀";
+        const file = document.getElementById('file-input').files[0];
+        if (!file) return alert("Önce bir dosya seç!");
+
+        const secretText = document.getElementById('secret-msg').value;
+        const useTimer = document.getElementById('use-timer').checked;
+        const timeInput = document.getElementById('time-input').value;
+
+        let unlockTime = null;
+        if(useTimer && timeInput) {
+            const now = new Date();
+            const [hours, minutes] = timeInput.split(':');
+            const targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+            if(targetDate < now) targetDate.setDate(targetDate.getDate() + 1); // Eğer saat geçtiyse yarına kur
+            unlockTime = targetDate.getTime();
+        }
+
+        statusEl.innerText = "Şifreleniyor ve gönderiliyor...";
+        
+        const reader = new FileReader();
+        reader.onload = () => {
+            conn.send({ 
+                file: reader.result, 
+                filename: file.name,
+                secret: secretText,
+                unlockTime: unlockTime
+            });
+            statusEl.innerText = "GÖREV BAŞARILI! 🚀";
         };
-        r.readAsArrayBuffer(f);
+        reader.readAsArrayBuffer(file);
     };
 </script>
 </body>
