@@ -3,62 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bordex Entropy v5 - Speed Edition</title>
+    <title>Bordex Entropy v6 - Auto-Sync</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { --bg: #020617; --accent: #22d3ee; --panel: #0f172a; }
-        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--accent); margin: 0; padding: 15px; display: flex; justify-content: center; }
-        .card { background: var(--panel); padding: 25px; border-radius: 12px; width: 100%; max-width: 500px; border: 1px solid #1e293b; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--accent); margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .card { background: var(--panel); padding: 25px; border-radius: 12px; width: 100%; max-width: 500px; border: 1px solid #1e293b; }
         .status { background: #1e293b; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.8em; text-align: center; border: 1px solid var(--accent); }
-        #qrcode { filter: invert(0.9); display: flex; justify-content: center; margin: 15px 0; background: white; padding: 10px; border-radius: 8px; }
-        input, button { background: #1e293b; border: 1px solid #334155; color: white; padding: 12px; width: 100%; margin-bottom: 10px; border-radius: 8px; box-sizing: border-box; outline: none; }
-        button { cursor: pointer; color: var(--accent); font-weight: bold; border-color: var(--accent); transition: 0.2s; }
+        
+        /* QR ve Anahtar Bölümü */
+        #qr-container { background: white; padding: 15px; border-radius: 12px; margin: 15px 0; display: flex; flex-direction: column; align-items: center; }
+        #qrcode { filter: invert(1) hue-rotate(180deg); } /* QR Siyah-Beyaz Kontrastı */
+        .big-key { color: #020617; font-size: 1.4em; font-weight: 900; margin-top: 10px; font-family: monospace; letter-spacing: 1px; border-top: 2px dashed #020617; padding-top: 5px; width: 100%; text-align: center; }
+        
+        input, button { background: #1e293b; border: 1px solid #334155; color: white; padding: 12px; width: 100%; margin-bottom: 10px; border-radius: 8px; outline: none; }
+        button { cursor: pointer; color: var(--accent); font-weight: bold; border-color: var(--accent); }
         button:hover { background: var(--accent); color: #020617; }
-        #canvas-wrap { margin-top: 15px; }
-        canvas { background: white; border-radius: 8px; touch-action: none; width: 100%; height: 250px; cursor: crosshair; }
+        canvas { background: white; border-radius: 8px; touch-action: none; width: 100%; height: 250px; }
         .progress-bar { height: 4px; background: #334155; margin: 10px 0; display: none; overflow: hidden; border-radius: 2px; }
-        #progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.1s; }
-        .id-badge { font-size: 0.65em; opacity: 0.5; text-align: center; margin-top: 10px; }
+        #progress-fill { height: 100%; background: var(--accent); width: 0%; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2 style="text-align:center; margin:0 0 20px 0;">ENTROPY SPEED ⚡</h2>
-    <div id="status" class="status">SİSTEM ANALİZ EDİLİYOR...</div>
+    <h2 style="text-align:center; margin:0;">ENTROPY AUTO-SYNC ⚡</h2>
+    <div id="status" class="status">SİNYAL ARANIYOR...</div>
 
     <div id="setup-area">
-        <div id="qrcode"></div>
-        <input type="text" id="target-id" placeholder="HEDEF ANAHTARI GİRİN">
-        <button onclick="connectToPeer(document.getElementById('target-id').value)">Bağlan ve Hızlan</button>
-        <div class="id-badge">ANAHTAR: <span id="my-id">...</span></div>
+        <div id="qr-container">
+            <div id="qrcode"></div>
+            <div class="big-key" id="my-id-display">BAĞLANIYOR...</div>
+        </div>
+        
+        <input type="text" id="target-id" placeholder="HEDEF ANAHTARI BURAYA YAZ">
+        <button onclick="connectToPeer(document.getElementById('target-id').value)">MANUEL BAĞLAN</button>
     </div>
 
     <div id="app-area" style="display:none;">
-        <div id="canvas-wrap">
-            <canvas id="live-canvas"></canvas>
-            <div style="display:flex; gap:5px; margin-top:5px;">
-                <button style="font-size:0.7em;" onclick="clearCanvas()">SİL</button>
-                <button style="font-size:0.7em;" onclick="document.getElementById('img-loader').click()">RESİM EKLE</button>
-            </div>
-            <input type="file" id="img-loader" style="display:none" accept="image/*" onchange="loadImgToCanvas(event)">
+        <canvas id="live-canvas"></canvas>
+        <div style="display:flex; gap:5px; margin: 5px 0 15px 0;">
+            <button style="font-size:0.7em;" onclick="clearCanvas()">TEMİZLE</button>
+            <button style="font-size:0.7em;" onclick="document.getElementById('img-loader').click()">RESİM YÜKLE</button>
         </div>
+        <input type="file" id="img-loader" style="display:none" accept="image/*" onchange="loadImgToCanvas(event)">
 
-        <input type="text" id="secret-msg" placeholder="GİZLİ NOT (OPSİYONEL)">
-        
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:0.7em;">
-            <div>KİLİT SAATİ:<input type="time" id="lock-time"></div>
-            <div style="display:flex; align-items:center; justify-content:center;"><input type="checkbox" id="self-destruct"> İMHA MODU</div>
+        <input type="text" id="secret-msg" placeholder="GİZLİ KATMAN NOTU">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:0.75em; margin-bottom:10px;">
+            <input type="time" id="lock-time">
+            <label style="display:flex; align-items:center;"><input type="checkbox" id="self-destruct"> İMHA MODU</label>
         </div>
         
         <div class="progress-bar" id="p-bar"><div id="progress-fill"></div></div>
-        <button id="send-btn" onclick="sendPayload()" style="border-width: 2px;">JET TRANSFERİ BAŞLAT 🚀</button>
-        <input type="file" id="file-input" style="margin-top:10px;">
+        <button id="send-btn" onclick="sendPayload()">JET TRANSFERİ BAŞLAT 🚀</button>
+        <input type="file" id="file-input">
     </div>
 
-    <div id="receive-area" style="display:none;">
-        <div id="timer-display" style="text-align:center; color:#ef4444; font-weight:bold; margin-bottom:10px;"></div>
+    <div id="receive-area" style="display:none; text-align:center;">
+        <div id="timer-display" style="color:#ef4444; font-weight:bold; margin-bottom:10px;"></div>
         <div id="msg-display" style="background:#1e293b; padding:10px; margin-bottom:10px; font-size:0.8em; border-radius:8px; display:none;"></div>
         <a id="download-link" style="text-decoration:none;"><button>DOSYAYI ÇÖZ VE KAYDET</button></a>
     </div>
@@ -68,26 +71,32 @@
     const statusEl = document.getElementById('status');
     const canvas = document.getElementById('live-canvas');
     const ctx = canvas.getContext('2d');
-    const pFill = document.getElementById('progress-fill');
-    const pBar = document.getElementById('p-bar');
-
-    // Tahmin Edilemez Yüksek Hızlı ID
-    const myID = 'brdx-' + Math.random().toString(36).substr(2, 9);
-    const peer = new Peer(myID, { debug: 1 });
+    
+    // Tahmin Edilemez ID
+    const myID = 'BRDX-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+    const peer = new Peer(myID);
     let conn;
 
     peer.on('open', (id) => {
-        document.getElementById('my-id').innerText = id;
-        new QRCode(document.getElementById("qrcode"), { text: window.location.href + "?key=" + id, width: 150, height: 150 });
-        statusEl.innerText = "SİNYAL AKTİF - BEKLENİYOR";
+        document.getElementById('my-id-display').innerText = id;
+        
+        // QR Kod Link Yapılandırması
+        const syncLink = window.location.origin + window.location.pathname + "?key=" + id;
+        new QRCode(document.getElementById("qrcode"), { text: syncLink, width: 180, height: 180 });
+        
+        statusEl.innerText = "SİNYAL AKTİF: " + id;
+
+        // URL'den Anahtar Yakalama ve OTOMATİK Bağlanma
         const urlKey = new URLSearchParams(window.location.search).get('key');
-        if (urlKey) connectToPeer(urlKey);
+        if (urlKey) {
+            document.getElementById('target-id').value = urlKey;
+            setTimeout(() => connectToPeer(urlKey), 500); // PeerJS hazır olması için kısa bekleme
+        }
     });
 
     function connectToPeer(id) {
         if(!id) return;
-        statusEl.innerText = "HEDEFE KİLİTLENİLİYOR...";
-        // WebRTC Veri Kanalı Ayarları (En Hızlı Mod)
+        statusEl.innerText = "OTOMATİK SENKRONİZASYON...";
         conn = peer.connect(id, { reliable: true });
         setupEvents();
     }
@@ -96,7 +105,7 @@
 
     function setupEvents() {
         conn.on('open', () => {
-            statusEl.innerText = "✅ YÜKSEK HIZLI BAĞLANTI KURULDU";
+            statusEl.innerText = "✅ BAĞLANTI KURULDU";
             document.getElementById('setup-area').style.display = 'none';
             document.getElementById('app-area').style.display = 'block';
         });
@@ -108,9 +117,9 @@
         });
     }
 
-    // --- CANLI TUVAL ---
+    // --- TUVAL SİSTEMİ ---
     canvas.width = 400; canvas.height = 250;
-    ctx.lineWidth = 3; ctx.strokeStyle = '#22d3ee'; ctx.lineCap = 'round';
+    ctx.lineWidth = 4; ctx.strokeStyle = '#22d3ee'; ctx.lineCap = 'round';
     let drawing = false;
 
     function draw(x, y, isNew, send) {
@@ -142,18 +151,12 @@
         reader.readAsDataURL(e.target.files[0]);
     }
 
-    // --- JET TRANSFER SİSTEMİ ---
+    // --- TRANSFER MOTORU ---
     function sendPayload() {
         const file = document.getElementById('file-input').files[0];
-        if(!file) return alert("Hızlanmak için bir dosya seçin!");
+        if(!file) return alert("Dosya seçilmedi!");
 
-        pBar.style.display = "block";
-        let progress = 0;
-        const interval = setInterval(() => { // Simülasyon değil, paketleme hızı
-            progress += 10; pFill.style.width = progress + "%";
-            if(progress >= 100) clearInterval(interval);
-        }, 50);
-
+        document.getElementById('p-bar').style.display = "block";
         const reader = new FileReader();
         reader.onload = () => {
             conn.send({
@@ -161,17 +164,19 @@
                 file: reader.result,
                 name: file.name,
                 msg: document.getElementById('secret-msg').value,
-                unlock: document.getElementById('lock-time').value ? getUnlockTime() : null,
+                unlock: getUnlockTime(),
                 destruct: document.getElementById('self-destruct').checked
             });
-            statusEl.innerText = "VERİ IŞINLANDI! ⚡";
-            setTimeout(() => { pBar.style.display = "none"; pFill.style.width = "0%"; }, 2000);
+            statusEl.innerText = "IŞINLANDI! 🚀";
+            document.getElementById('progress-fill').style.width = "100%";
         };
         reader.readAsArrayBuffer(file);
     }
 
     function getUnlockTime() {
-        const [h, m] = document.getElementById('lock-time').value.split(':');
+        const val = document.getElementById('lock-time').value;
+        if(!val) return null;
+        const [h, m] = val.split(':');
         const d = new Date(); d.setHours(h, m, 0);
         if(d < new Date()) d.setDate(d.getDate() + 1);
         return d.getTime();
@@ -184,7 +189,7 @@
         
         if(data.msg) {
             const m = document.getElementById('msg-display');
-            m.innerText = "STRATEJİK NOT: " + data.msg; m.style.display = "block";
+            m.innerText = "NOT: " + data.msg; m.style.display = "block";
         }
 
         const url = URL.createObjectURL(new Blob([data.file]));
@@ -194,15 +199,15 @@
             dl.style.display = "none";
             const itv = setInterval(() => {
                 const diff = data.unlock - new Date().getTime();
-                if(diff <= 0) { clearInterval(itv); dl.style.display = "block"; document.getElementById('timer-display').innerText = "ERİŞİM İZNİ VERİLDİ"; }
-                else { document.getElementById('timer-display').innerText = "KİLİT: " + Math.ceil(diff/1000) + "S"; }
+                if(diff <= 0) { clearInterval(itv); dl.style.display = "block"; document.getElementById('timer-display').innerText = "KİLİT AÇILDI"; }
+                else { document.getElementById('timer-display').innerText = "BEKLEYİN: " + Math.ceil(diff/1000) + "S"; }
             }, 1000);
         }
-
         if(data.destruct) {
-            dl.onclick = () => { setTimeout(() => { document.body.innerHTML = "<div style='color:red; text-align:center; padding:50px;'>VERİ KENDİNİ İMHA ETTİ.</div>"; }, 500); };
+            dl.onclick = () => { setTimeout(() => { document.body.innerHTML = "<h2 style='color:red; text-align:center; padding-top:100px;'>DOSYA İMHA OLDU.</h2>"; }, 500); };
         }
     }
 </script>
 </body>
 </html>
+
