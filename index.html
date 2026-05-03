@@ -3,59 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>bsharedrop - Hızlı Transfer</title>
+    <title>bsharedrop - Pro</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { --bg: #020617; --accent: #22d3ee; --panel: #0f172a; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--accent); margin: 0; padding: 15px; display: flex; justify-content: center; }
-        .card { background: var(--panel); padding: 25px; border-radius: 12px; width: 100%; max-width: 500px; border: 1px solid #1e293b; }
-        .status { background: #1e293b; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.8em; text-align: center; border: 1px solid var(--accent); }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--accent); margin: 0; padding: 10px; display: flex; justify-content: center; }
+        .card { background: var(--panel); padding: 20px; border-radius: 12px; width: 100%; max-width: 500px; border: 1px solid #1e293b; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .status { background: #1e293b; padding: 8px; border-radius: 8px; margin-bottom: 12px; font-size: 0.75em; text-align: center; border: 1px solid var(--accent); }
         
-        #qr-container { background: white; padding: 15px; border-radius: 12px; margin: 15px 0; display: flex; flex-direction: column; align-items: center; }
-        #qrcode { filter: invert(1) hue-rotate(180deg); }
-        .big-key { color: #020617; font-size: 1.6em; font-weight: 900; margin-top: 10px; font-family: monospace; border-top: 2px dashed #020617; padding-top: 5px; width: 100%; text-align: center; }
+        #qr-container { background: white; padding: 15px; border-radius: 12px; margin: 10px 0; display: flex; flex-direction: column; align-items: center; }
+        .big-key { color: #020617; font-size: 1.5em; font-weight: 900; margin-top: 8px; font-family: monospace; border-top: 1px dashed #ccc; width: 100%; text-align: center; }
         
-        input, button { background: #1e293b; border: 1px solid #334155; color: white; padding: 12px; width: 100%; margin-bottom: 10px; border-radius: 8px; outline: none; }
-        button { cursor: pointer; color: var(--accent); font-weight: bold; border-color: var(--accent); }
-        button:active { transform: scale(0.98); }
-        canvas { background: white; border-radius: 8px; width: 100%; height: 250px; }
-        .progress-bar { height: 6px; background: #334155; margin: 10px 0; display: none; border-radius: 3px; overflow: hidden; }
-        #progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s; }
+        input, button { background: #1e293b; border: 1px solid #334155; color: white; padding: 12px; width: 100%; margin-bottom: 8px; border-radius: 8px; outline: none; }
+        button { cursor: pointer; color: var(--accent); font-weight: bold; border-color: var(--accent); transition: 0.2s; }
+        button:hover { background: var(--accent); color: #020617; }
+        
+        canvas { background: white; border-radius: 8px; width: 100%; height: 280px; touch-action: none; cursor: crosshair; }
+        .preview-box { border: 2px dashed var(--accent); padding: 10px; margin: 10px 0; border-radius: 8px; text-align: center; background: rgba(34, 211, 238, 0.05); }
+        #incoming-preview { max-width: 100%; border-radius: 4px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2 style="text-align:center; margin:0; letter-spacing: -1px;">bsharedrop ⚡</h2>
-    <div id="status" class="status">SİSTEM BAŞLATILIYOR...</div>
+    <h2 style="text-align:center; margin:0 0 10px 0;">bsharedrop v7 ⚡</h2>
+    <div id="status" class="status">SİSTEM YÜKLENİYOR...</div>
 
     <div id="setup-area">
-        <div id="qr-container">
-            <div id="qrcode"></div>
-            <div class="big-key" id="my-id-display">...</div>
-        </div>
+        <div id="qr-container"><div id="qrcode"></div><div class="big-key" id="my-id-display">...</div></div>
         <input type="text" id="target-id" placeholder="HEDEF ANAHTARI GİRİN">
-        <button onclick="connectToPeer(document.getElementById('target-id').value)">BAĞLAN</button>
+        <button onclick="connectToPeer(document.getElementById('target-id').value)">BAĞLAN VE SENKRONİZE OL</button>
     </div>
 
     <div id="app-area" style="display:none;">
-        <canvas id="live-canvas"></canvas>
-        <div style="display:flex; gap:5px; margin: 5px 0;">
-            <button style="font-size:0.7em;" onclick="clearCanvas()">TEMİZLE</button>
-            <button style="font-size:0.7em;" onclick="document.getElementById('img-loader').click()">RESİM YÜKLE</button>
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <span style="font-size: 0.7em;">TUVAL / DÜZENLEME</span>
+            <button style="width:auto; padding:4px 10px; font-size:0.6em;" onclick="clearCanvas()">TEMİZLE</button>
         </div>
-        <input type="file" id="img-loader" style="display:none" accept="image/*" onchange="loadImgToCanvas(event)">
-
-        <input type="text" id="secret-msg" placeholder="GİZLİ NOT">
-        <div class="progress-bar" id="p-bar"><div id="progress-fill"></div></div>
-        <input type="file" id="file-input">
-        <button id="send-btn" onclick="sendPayload()" style="background: var(--accent); color: #020617;">DOSYAYI GÖNDER 🚀</button>
+        <canvas id="live-canvas"></canvas>
+        
+        <div style="margin: 10px 0;">
+            <input type="file" id="file-input" style="font-size:0.8em;" onchange="handleFileSelect(event)">
+            <input type="text" id="secret-msg" placeholder="Alıcıya gizli bir not bırakın...">
+        </div>
+        
+        <button id="send-btn" onclick="sendData()" style="background: var(--accent); color: #020617; height: 50px; font-size: 1.1em;">PAKETİ FIRLAT 🚀</button>
     </div>
 
     <div id="receive-area" style="display:none;">
-        <div id="msg-display" style="background:#1e293b; padding:10px; margin-bottom:10px; border-radius:8px; display:none;"></div>
-        <a id="download-link" style="text-decoration:none;"><button>İNDİR VE KAYDET</button></a>
+        <div class="preview-box">
+            <h4 style="margin:0;">YENİ DOSYA GELDİ!</h4>
+            <p id="file-info" style="font-size:0.8em; color: #94a3b8; margin: 5px 0;"></p>
+            <div id="msg-display" style="font-style: italic; color: #fff; background: #334155; padding: 5px; margin: 5px 0; font-size: 0.85em; border-radius: 4px; display: none;"></div>
+            <img id="incoming-preview" style="display:none;">
+            <a id="download-link" style="text-decoration:none; margin-top:10px; display:block;"><button>DOSYAYI KAYDET</button></a>
+        </div>
+        <button onclick="resetUI()" style="font-size:0.7em; border:none; opacity:0.6;">Yeni Gönderi Bekle</button>
     </div>
 </div>
 
@@ -63,132 +67,148 @@
     const statusEl = document.getElementById('status');
     const canvas = document.getElementById('live-canvas');
     const ctx = canvas.getContext('2d');
-    
-    // bsharedrop Kimliği
     const myID = 'BS-' + Math.random().toString(36).substr(2, 5).toUpperCase();
     const peer = new Peer(myID);
     let conn;
+    let selectedFile = null;
 
     peer.on('open', (id) => {
         document.getElementById('my-id-display').innerText = id;
-        const syncLink = window.location.origin + window.location.pathname + "?key=" + id;
-        new QRCode(document.getElementById("qrcode"), { text: syncLink, width: 180, height: 180 });
+        new QRCode(document.getElementById("qrcode"), { text: window.location.href.split('?')[0] + "?key=" + id, width: 160, height: 160 });
         statusEl.innerText = "HAZIR: " + id;
-
         const urlKey = new URLSearchParams(window.location.search).get('key');
-        if (urlKey) {
-            document.getElementById('target-id').value = urlKey;
-            setTimeout(() => connectToPeer(urlKey), 800);
-        }
+        if (urlKey) { document.getElementById('target-id').value = urlKey; setTimeout(() => connectToPeer(urlKey), 1000); }
     });
 
     function connectToPeer(id) {
         if(!id || id === myID) return;
         statusEl.innerText = "BAĞLANTI KURULUYOR...";
         conn = peer.connect(id, { reliable: true });
-        bindEvents();
+        setupEvents();
     }
 
-    peer.on('connection', (c) => {
-        conn = c;
-        bindEvents();
-    });
+    peer.on('connection', (c) => { conn = c; setupEvents(); });
 
-    function bindEvents() {
+    function setupEvents() {
         conn.on('open', () => {
-            statusEl.innerText = "✅ BAĞLANTI TAMAMLANDI";
+            statusEl.innerText = "✅ CİHAZLAR SENKRONİZE";
             document.getElementById('setup-area').style.display = 'none';
             document.getElementById('app-area').style.display = 'block';
         });
-
         conn.on('data', (data) => {
-            if(data.type === 'draw') draw(data.x, data.y, data.isNew, false);
+            if(data.type === 'draw') remoteDraw(data.x, data.y, data.isNew);
             else if(data.type === 'clear') ctx.clearRect(0,0,canvas.width,canvas.height);
-            else if(data.type === 'payload') handleIncoming(data);
-        });
-
-        conn.on('close', () => {
-            statusEl.innerText = "Bağlantı kesildi, lütfen sayfayı yenileyin.";
-            alert("Bağlantı koptu.");
+            else if(data.type === 'payload') showIncoming(data);
         });
     }
 
-    // TUVAL
-    canvas.width = 400; canvas.height = 250;
-    ctx.lineWidth = 4; ctx.strokeStyle = '#22d3ee'; ctx.lineCap = 'round';
+    // --- AKICI ÇİZİM SİSTEMİ ---
+    canvas.width = canvas.offsetWidth; canvas.height = 280;
+    ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.strokeStyle = '#22d3ee';
     let drawing = false;
 
-    function draw(x, y, isNew, send) {
-        if (isNew) ctx.beginPath();
-        ctx.lineTo(x, y); ctx.stroke();
-        if (send && conn && conn.open) conn.send({type:'draw', x, y, isNew});
-    }
-
-    const getPos = (e) => {
+    function getPos(e) {
         const r = canvas.getBoundingClientRect();
         const c = e.touches ? e.touches[0] : e;
-        return { x: (c.clientX - r.left) * (canvas.width / r.width), y: (c.clientY - r.top) * (canvas.height / r.height) };
-    };
-
-    canvas.onmousedown = (e) => { drawing = true; const p = getPos(e); draw(p.x, p.y, true, true); };
-    canvas.onmousemove = (e) => { if(drawing) { const p = getPos(e); draw(p.x, p.y, false, true); } };
-    window.onmouseup = () => drawing = false;
-
-    function clearCanvas() { ctx.clearRect(0,0,canvas.width,canvas.height); if(conn.open) conn.send({type:'clear'}); }
-    function loadImgToCanvas(e) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const img = new Image();
-            img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            img.src = ev.target.result;
-        };
-        reader.readAsDataURL(e.target.files[0]);
+        return { x: (c.clientX - r.left), y: (c.clientY - r.top) };
     }
 
-    // TRANSFER
-    function sendPayload() {
-        const fileInput = document.getElementById('file-input');
-        const file = fileInput.files[0];
-        if(!file) { alert("Lütfen önce bir dosya seçin!"); return; }
-        if(!conn || !conn.open) { alert("Bağlantı aktif değil!"); return; }
+    canvas.onmousedown = canvas.ontouchstart = (e) => {
+        drawing = true; const p = getPos(e);
+        ctx.beginPath(); ctx.moveTo(p.x, p.y);
+        if(conn && conn.open) conn.send({type:'draw', x:p.x, y:p.y, isNew:true});
+    };
 
-        statusEl.innerText = "GÖNDERİLİYOR...";
-        document.getElementById('p-bar').style.display = "block";
-        document.getElementById('progress-fill').style.width = "30%";
+    canvas.onmousemove = canvas.ontouchmove = (e) => {
+        if(!drawing) return; e.preventDefault();
+        const p = getPos(e);
+        ctx.lineTo(p.x, p.y); ctx.stroke();
+        if(conn && conn.open) conn.send({type:'draw', x:p.x, y:p.y, isNew:false});
+    };
+
+    window.onmouseup = window.ontouchend = () => { drawing = false; };
+
+    function remoteDraw(x, y, isNew) {
+        if(isNew) { ctx.beginPath(); ctx.moveTo(x, y); }
+        else { ctx.lineTo(x, y); ctx.stroke(); }
+    }
+
+    function clearCanvas() { ctx.clearRect(0,0,canvas.width,canvas.height); if(conn) conn.send({type:'clear'}); }
+
+    // --- DOSYA VE TRANSFER ---
+    function handleFileSelect(e) {
+        selectedFile = e.target.files[0];
+        if(selectedFile && selectedFile.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const img = new Image();
+                img.onload = () => { ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(selectedFile);
+        }
+    }
+
+    function sendData() {
+        if(!conn || !conn.open) return alert("Bağlantı yok!");
+        statusEl.innerText = "PAKETLENİYOR...";
+        
+        // Eğer dosyada çizim yapıldıysa tuvali de bir resim olarak ekle
+        const editedCanvas = canvas.toDataURL("image/png");
 
         const reader = new FileReader();
         reader.onload = () => {
-            try {
-                conn.send({
-                    type: 'payload',
-                    file: reader.result,
-                    name: file.name,
-                    msg: document.getElementById('secret-msg').value
-                });
-                document.getElementById('progress-fill').style.width = "100%";
-                statusEl.innerText = "GÖNDERİM BAŞARILI! ✅";
-            } catch (err) {
-                statusEl.innerText = "HATA: Tekrar dene.";
-                console.error(err);
-            }
+            conn.send({
+                type: 'payload',
+                file: reader.result,
+                fileName: selectedFile ? selectedFile.name : "cizim.png",
+                fileSize: selectedFile ? (selectedFile.size / 1024).toFixed(1) + " KB" : "---",
+                isImage: selectedFile && selectedFile.type.startsWith('image/'),
+                note: document.getElementById('secret-msg').value,
+                canvasData: editedCanvas
+            });
+            statusEl.innerText = "GÖNDERİM BAŞARILI! ✅";
         };
-        reader.readAsArrayBuffer(file);
+
+        if(selectedFile) reader.readAsArrayBuffer(selectedFile);
+        else {
+            // Sadece tuval gönderiliyorsa
+            fetch(editedCanvas).then(res => res.arrayBuffer()).then(buf => {
+                conn.send({ type: 'payload', file: buf, fileName: "cizim.png", fileSize: "---", isImage: true, note: document.getElementById('secret-msg').value });
+                statusEl.innerText = "ÇİZİM GÖNDERİLDİ! ✅";
+            });
+        }
     }
 
-    function handleIncoming(data) {
+    function showIncoming(data) {
         document.getElementById('app-area').style.display = 'none';
         document.getElementById('receive-area').style.display = 'block';
-        statusEl.innerText = "DOSYA ALINDI!";
         
-        if(data.msg) {
-            const m = document.getElementById('msg-display');
-            m.innerText = "NOT: " + data.msg; m.style.display = "block";
+        document.getElementById('file-info').innerText = `${data.fileName} (${data.fileSize})`;
+        
+        if(data.note) {
+            const n = document.getElementById('msg-display');
+            n.innerText = "NOT: " + data.note; n.style.display = "block";
+        }
+
+        const previewImg = document.getElementById('incoming-preview');
+        if(data.isImage || data.canvasData) {
+            previewImg.src = data.canvasData || URL.createObjectURL(new Blob([data.file]));
+            previewImg.style.display = "block";
+        } else {
+            previewImg.style.display = "none";
         }
 
         const dl = document.getElementById('download-link');
-        const blob = new Blob([data.file]);
-        dl.href = URL.createObjectURL(blob);
-        dl.download = data.name;
+        dl.href = URL.createObjectURL(new Blob([data.file]));
+        dl.download = data.fileName;
+        statusEl.innerText = "DOSYA GELDİ!";
+    }
+
+    function resetUI() {
+        document.getElementById('receive-area').style.display = 'none';
+        document.getElementById('app-area').style.display = 'block';
+        statusEl.innerText = "YENİ GÖNDERİ İÇİN HAZIR";
     }
 </script>
 </body>
