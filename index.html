@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>bsharedrop - Multi-Drop</title>
+    <title>bsharedrop v10</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -15,60 +15,61 @@
         #qr-container { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; }
         .big-key { color: #020617; font-size: 1.6em; font-weight: 900; margin-top: 10px; font-family: monospace; }
         
-        input, button { background: #1e293b; border: 1px solid #334155; color: white; padding: 12px; width: 100%; margin-bottom: 10px; border-radius: 10px; outline: none; }
-        button { cursor: pointer; color: var(--accent); font-weight: bold; border-color: var(--accent); }
-        .btn-send { background: var(--accent); color: #020617; border: none; font-size: 1.1em; height: 55px; }
-
-        /* Dosya Listesi Alanı */
-        .file-list { margin: 15px 0; max-height: 200px; overflow-y: auto; background: rgba(255,255,255,0.03); border-radius: 8px; padding: 5px; }
-        .file-item { display: flex; align-items: center; justify-content: space-between; background: #1e293b; padding: 8px; margin-bottom: 5px; border-radius: 6px; font-size: 0.8em; }
-        .file-item img { width: 30px; height: 30px; border-radius: 4px; object-fit: cover; }
-
-        /* Editor Modal */
-        #editor-layer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 100; flex-direction: column; align-items: center; padding: 10px; }
-        canvas { background: white; max-width: 100%; height: auto; border-radius: 8px; touch-action: none; }
+        /* Butonlar ve Girdiler */
+        input[type="text"] { background: #1e293b; border: 1px solid #334155; color: white; padding: 12px; width: 100%; margin-bottom: 10px; border-radius: 10px; box-sizing: border-box; }
+        .btn { cursor: pointer; color: var(--accent); font-weight: bold; border: 1px solid var(--accent); background: #1e293b; padding: 12px; width: 100%; border-radius: 10px; margin-bottom: 10px; }
+        .btn-send { background: var(--accent); color: #020617; border: none; font-size: 1.1em; }
         
-        #receive-area { display: none; }
+        /* Dosya Listesi Alanı */
+        .file-list { margin: 15px 0; max-height: 250px; overflow-y: auto; border: 1px dashed #334155; border-radius: 10px; padding: 10px; }
+        .file-item { display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 10px; margin-bottom: 8px; border-radius: 8px; border: 1px solid #1e293b; }
+        .file-item span { font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; }
+        
+        /* Editör Modal */
+        #editor-layer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
+        canvas { background: white; max-width: 95%; max-height: 70%; border-radius: 8px; touch-action: none; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2 style="text-align:center; margin:0 0 15px 0;">bsharedrop MULTI ⚡</h2>
-    <div id="status" class="status">SİSTEM YÜKLENİYOR...</div>
+    <h2 style="text-align:center; margin:0 0 15px 0;">bsharedrop v10 ⚡</h2>
+    <div id="status" class="status">SİNYAL BEKLENİYOR...</div>
 
     <div id="setup-area">
         <div id="qr-container"><div id="qrcode"></div><div class="big-key" id="my-id-display">...</div></div>
         <input type="text" id="target-id" placeholder="HEDEF ANAHTARI">
-        <button onclick="connectToPeer(document.getElementById('target-id').value)">BAĞLAN</button>
+        <button class="btn" onclick="connectToPeer(document.getElementById('target-id').value)">BAĞLAN</button>
     </div>
 
     <div id="app-area" style="display:none;">
-        <input type="file" id="file-input" multiple style="display:none;" onchange="handleFiles(event)">
-        <button onclick="document.getElementById('file-input').click()">➕ DOSYALARI EKLE</button>
+        <label class="btn" style="display: block; text-align: center;">
+            ➕ DOSYALARI EKLE
+            <input type="file" id="file-input" multiple style="display:none;" onchange="handleFiles(event)">
+        </label>
         
-        <div class="file-list" id="file-list-ui"></div>
+        <div class="file-list" id="file-list-ui">Seçilen dosya yok.</div>
 
-        <input type="text" id="secret-msg" placeholder="Paket notu...">
-        <button class="btn-send" onclick="sendAll()">PAKETİ FIRLAT 🚀</button>
+        <input type="text" id="secret-msg" placeholder="Mesajınız (opsiyonel)...">
+        <button class="btn btn-send" id="send-btn" onclick="sendAll()">PAKETİ GÖNDER 🚀</button>
     </div>
 
-    <div id="receive-area">
+    <div id="receive-area" style="display:none;">
         <div style="background: #1e293b; padding: 15px; border-radius: 12px; border: 1px solid var(--accent);">
-            <h4 style="margin:0 0 10px 0; text-align:center;">GELEN VERİ PAKETİ</h4>
-            <div id="in-msg" style="font-size:0.8em; background:#0f172a; padding:10px; border-radius:6px; margin-bottom:10px; display:none;"></div>
+            <h4 style="margin:0 0 10px 0; text-align:center;">GELEN PAKET</h4>
+            <div id="in-msg" style="font-size:0.8em; background:#020617; padding:10px; border-radius:6px; margin-bottom:10px; display:none;"></div>
             <div id="incoming-list"></div>
-            <button onclick="location.reload()" style="width:100%; margin-top:10px; font-size:0.7em; border:none;">YENİ TRANSFER</button>
+            <button class="btn" style="margin-top:15px; font-size:0.8em;" onclick="location.reload()">YENİ TRANSFER</button>
         </div>
     </div>
 </div>
 
 <div id="editor-layer">
-    <h3 style="color:white; margin:10px 0;">DÜZENLENİYOR...</h3>
+    <h3 style="color:white;">DÜZENLE</h3>
     <canvas id="editor-canvas"></canvas>
-    <div style="display:flex; gap:10px; margin-top:15px; width:100%; max-width:400px;">
-        <button onclick="closeEditor(false)" style="flex:1; border-color:red; color:red;">İPTAL</button>
-        <button onclick="closeEditor(true)" style="flex:2; background:var(--accent); color:black;">KAYDET VE GÜNCELLE</button>
+    <div style="display:flex; gap:10px; margin-top:20px; width:90%; max-width:400px;">
+        <button class="btn" onclick="closeEditor(false)" style="color:red; border-color:red;">İPTAL</button>
+        <button class="btn" onclick="closeEditor(true)" style="background:var(--accent); color:black; border:none;">KAYDET</button>
     </div>
 </div>
 
@@ -85,11 +86,12 @@
         new QRCode(document.getElementById("qrcode"), { text: window.location.href.split('?')[0] + "?key=" + id, width: 160, height: 160 });
         statusEl.innerText = "HAZIR: " + id;
         const urlKey = new URLSearchParams(window.location.search).get('key');
-        if (urlKey) { document.getElementById('target-id').value = urlKey; setTimeout(() => connectToPeer(urlKey), 1000); }
+        if (urlKey) { document.getElementById('target-id').value = urlKey; setTimeout(() => connectToPeer(urlKey), 800); }
     });
 
     function connectToPeer(id) {
         if(!id || id === myID) return;
+        statusEl.innerText = "BAĞLANIYOR...";
         conn = peer.connect(id, { reliable: true });
         setupEvents();
     }
@@ -98,21 +100,25 @@
 
     function setupEvents() {
         conn.on('open', () => {
-            statusEl.innerText = "✅ SENKRONİZE";
+            statusEl.innerText = "✅ BAĞLANTI KURULDU";
             document.getElementById('setup-area').style.display = 'none';
             document.getElementById('app-area').style.display = 'block';
         });
         conn.on('data', (data) => showIncoming(data));
+        conn.on('error', () => statusEl.innerText = "Bağlantı Hatası!");
     }
 
-    // DOSYA İŞLEMLERİ
     async function handleFiles(e) {
         const files = Array.from(e.target.files);
+        if(files.length === 0) return;
+        
+        statusEl.innerText = "Dosyalar işleniyor...";
         for(let f of files) {
             const dataUrl = f.type.startsWith('image/') ? await toDataUrl(f) : null;
-            fileQueue.push({ file: f, name: f.name, type: f.type, preview: dataUrl, edited: null });
+            fileQueue.push({ file: f, name: f.name, type: f.type, preview: dataUrl, edited: false });
         }
         updateUI();
+        statusEl.innerText = "Dosyalar eklendi.";
     }
 
     function toDataUrl(file) {
@@ -125,34 +131,35 @@
 
     function updateUI() {
         const list = document.getElementById('file-list-ui');
+        if(fileQueue.length === 0) { list.innerHTML = "Seçilen dosya yok."; return; }
         list.innerHTML = "";
         fileQueue.forEach((item, idx) => {
             const div = document.createElement('div');
             div.className = "file-item";
             div.innerHTML = `
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <img src="${item.preview || 'https://cdn-icons-png.flaticon.com/512/124/124837.png'}">
-                    <span>${item.name.substring(0,15)}...</span>
+                <span>${item.name}</span>
+                <div style="display:flex; gap:5px;">
+                    ${item.type.startsWith('image/') ? `<button onclick="openEditor(${idx})" style="padding:5px 10px; border-radius:5px; border:1px solid #fbbf24; color:#fbbf24; background:transparent; cursor:pointer;">✏️</button>` : ''}
+                    <button onclick="removeItem(${idx})" style="padding:5px 10px; border-radius:5px; border:1px solid red; color:red; background:transparent; cursor:pointer;">X</button>
                 </div>
-                ${item.type.startsWith('image/') ? `<button onclick="openEditor(${idx})" style="padding:2px 8px; font-size:0.7em;">✏️</button>` : ''}
             `;
             list.appendChild(div);
         });
     }
 
-    // EDİTÖR
+    function removeItem(idx) { fileQueue.splice(idx, 1); updateUI(); }
+
     function openEditor(idx) {
         currentEditIdx = idx;
         document.getElementById('editor-layer').style.display = 'flex';
         const img = new Image();
         img.onload = () => {
-            canvas.width = window.innerWidth * 0.95;
-            canvas.height = window.innerHeight * 0.7;
-            ctx.fillStyle = "white"; ctx.fillRect(0,0,canvas.width,canvas.height);
+            canvas.width = img.width > 800 ? 800 : img.width;
+            canvas.height = (img.height / img.width) * canvas.width;
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = "red"; ctx.lineWidth = 4; ctx.lineCap = "round";
         };
         img.src = fileQueue[idx].preview;
-        ctx.strokeStyle = "red"; ctx.lineWidth = 5; ctx.lineCap = "round";
     }
 
     let drawing = false;
@@ -161,7 +168,8 @@
         if(!drawing) return; e.preventDefault();
         const r = canvas.getBoundingClientRect();
         const c = e.touches ? e.touches[0] : e;
-        ctx.lineTo(c.clientX - r.left, c.clientY - r.top); ctx.stroke();
+        ctx.lineTo((c.clientX - r.left) * (canvas.width / r.width), (c.clientY - r.top) * (canvas.height / r.height));
+        ctx.stroke();
     };
     window.onmouseup = window.ontouchend = () => drawing = false;
 
@@ -169,36 +177,27 @@
         if(save) {
             fileQueue[currentEditIdx].preview = canvas.toDataURL("image/png");
             fileQueue[currentEditIdx].edited = true;
-            updateUI();
         }
         document.getElementById('editor-layer').style.display = 'none';
     }
 
-    // GÖNDERİM
     async function sendAll() {
-        if(fileQueue.length === 0) return alert("Dosya ekleyin!");
-        statusEl.innerText = "PAKETLENİYOR...";
+        if(!conn || !conn.open) return alert("Bağlantı koptu!");
+        if(fileQueue.length === 0) return alert("Dosya seçilmedi!");
         
-        const payload = {
-            msg: document.getElementById('secret-msg').value,
-            files: []
-        };
+        statusEl.innerText = "Işınlanıyor...";
+        const payload = { msg: document.getElementById('secret-msg').value, files: [] };
 
         for(let item of fileQueue) {
             const buffer = item.edited ? await (await fetch(item.preview)).arrayBuffer() : await item.file.arrayBuffer();
-            payload.files.push({
-                name: item.name,
-                type: item.type,
-                data: buffer
-            });
+            payload.files.push({ name: item.name, type: item.type, data: buffer });
         }
 
         conn.send(payload);
-        statusEl.innerText = "TÜM PAKET IŞINLANDI! ✅";
+        statusEl.innerText = "✅ GÖNDERİLDİ!";
         fileQueue = []; updateUI();
     }
 
-    // ALIM
     function showIncoming(data) {
         document.getElementById('app-area').style.display = 'none';
         document.getElementById('receive-area').style.display = 'block';
@@ -206,18 +205,13 @@
             document.getElementById('in-msg').innerText = "NOT: " + data.msg;
             document.getElementById('in-msg').style.display = "block";
         }
-
         const list = document.getElementById('incoming-list');
         list.innerHTML = "";
         data.files.forEach(f => {
-            const blob = new Blob([f.data], {type: f.type});
-            const url = URL.createObjectURL(blob);
+            const url = URL.createObjectURL(new Blob([f.data], {type: f.type}));
             const div = document.createElement('div');
             div.className = "file-item";
-            div.innerHTML = `
-                <span>${f.name}</span>
-                <a href="${url}" download="${f.name}"><button style="padding:4px 8px; font-size:0.7em;">İNDİR</button></a>
-            `;
+            div.innerHTML = `<span>${f.name}</span><a href="${url}" download="${f.name}"><button class="btn" style="width:auto; margin:0; font-size:0.7em;">İNDİR</button></a>`;
             list.appendChild(div);
         });
         statusEl.innerText = "PAKET ALINDI!";
@@ -225,3 +219,4 @@
 </script>
 </body>
 </html>
+
