@@ -3,71 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>bsharedrop v11</title>
+    <title>bsharedrop v12</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { --bg: #020617; --accent: #22d3ee; --panel: #0f172a; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--accent); margin: 0; padding: 10px; display: flex; justify-content: center; }
-        .card { background: var(--panel); padding: 20px; border-radius: 16px; width: 100%; max-width: 500px; border: 1px solid #1e293b; box-shadow: 0 10px 50px rgba(0,0,0,0.5); }
+        body { font-family: sans-serif; background: var(--bg); color: var(--accent); margin: 0; padding: 10px; display: flex; justify-content: center; }
+        .card { background: var(--panel); padding: 20px; border-radius: 16px; width: 100%; max-width: 450px; border: 1px solid #1e293b; }
         .status { background: #1e293b; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.75em; text-align: center; border: 1px solid var(--accent); }
         
-        /* QR ve Anahtar */
         #qr-container { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; }
-        .big-key { color: #020617; font-size: 1.6em; font-weight: 900; margin-top: 10px; font-family: monospace; border-top: 1px dashed #333; width: 100%; text-align: center; }
+        .big-key { color: #020617; font-size: 1.5em; font-weight: bold; margin-top: 10px; font-family: monospace; }
         
-        /* Butonlar */
-        .btn { display: block; cursor: pointer; color: var(--accent); font-weight: bold; border: 1px solid var(--accent); background: #1e293b; padding: 14px; width: 100%; border-radius: 12px; margin-bottom: 10px; text-align: center; box-sizing: border-box; text-decoration: none; font-size: 1em; }
-        .btn-send { background: var(--accent); color: #020617; border: none; font-size: 1.1em; }
+        /* DOSYA SEÇİCİ - EN GÜVENLİ YAPI */
+        .file-input-wrapper { position: relative; margin-bottom: 10px; }
+        #file-input { width: 100%; background: #1e293b; color: var(--accent); padding: 15px; border-radius: 12px; border: 2px dashed var(--accent); cursor: pointer; }
+        
+        .btn { display: block; cursor: pointer; color: #020617; font-weight: bold; background: var(--accent); padding: 14px; width: 100%; border-radius: 12px; margin-bottom: 10px; text-align: center; border: none; font-size: 1em; }
         input[type="text"] { background: #1e293b; border: 1px solid #334155; color: white; padding: 14px; width: 100%; margin-bottom: 10px; border-radius: 12px; box-sizing: border-box; outline: none; }
         
-        /* Dosya Listesi */
-        .file-list { margin: 15px 0; max-height: 200px; overflow-y: auto; border: 1px dashed #334155; border-radius: 12px; padding: 8px; }
-        .file-item { display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 10px; margin-bottom: 6px; border-radius: 8px; font-size: 0.85em; border: 1px solid #1e293b; }
-        
-        /* Editor */
+        .file-list { margin: 15px 0; max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 5px; }
+        .file-item { display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 8px; margin-bottom: 5px; border-radius: 6px; font-size: 0.8em; border: 1px solid #1e293b; }
+
         #editor-layer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
-        canvas { background: white; max-width: 95%; max-height: 75%; border-radius: 8px; touch-action: none; }
+        canvas { background: white; max-width: 95%; max-height: 70%; border-radius: 8px; touch-action: none; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2 style="text-align:center; margin:0 0 15px 0; letter-spacing: -1px;">bsharedrop ⚡</h2>
-    <div id="status" class="status">SİSTEM ANALİZ EDİLİYOR...</div>
+    <h2 style="text-align:center; margin:0 0 15px 0;">bsharedrop v12 ⚡</h2>
+    <div id="status" class="status">SİSTEM BAŞLATILIYOR...</div>
 
     <div id="setup-area">
         <div id="qr-container"><div id="qrcode"></div><div class="big-key" id="my-id-display">...</div></div>
         <input type="text" id="target-id" placeholder="HEDEF ANAHTARI">
-        <button class="btn" onclick="connectToPeer(document.getElementById('target-id').value)">BAĞLANTIYI BAŞLAT</button>
+        <button class="btn" onclick="connectToPeer(document.getElementById('target-id').value)">BAĞLAN</button>
     </div>
 
     <div id="app-area" style="display:none;">
-        <label for="file-input" class="btn">➕ DOSYALARI SEÇ</label>
-        <input type="file" id="file-input" multiple style="display:none;" onchange="handleFiles(event)">
+        <div class="file-input-wrapper">
+            <p style="font-size: 0.7em; margin: 0 0 5px 5px;">Dosyaları aşağıdan seçin:</p>
+            <input type="file" id="file-input" multiple onchange="handleFiles(event)">
+        </div>
         
-        <div class="file-list" id="file-list-ui">Henüz dosya eklenmedi.</div>
+        <div class="file-list" id="file-list-ui">Seçili dosya yok.</div>
 
-        <input type="text" id="secret-msg" placeholder="Gizli not ekleyin (isteğe bağlı)...">
-        <button class="btn btn-send" onclick="sendAll()">PAKETİ FIRLAT 🚀</button>
+        <input type="text" id="secret-msg" placeholder="Mesajınız...">
+        <button class="btn" onclick="sendAll()" style="background: #fbbf24;">PAKETİ FIRLAT 🚀</button>
     </div>
 
     <div id="receive-area" style="display:none;">
         <div style="background: #1e293b; padding: 15px; border-radius: 12px; border: 1px solid var(--accent);">
-            <h4 style="margin:0 0 10px 0; text-align:center;">GELEN VERİLER</h4>
-            <div id="in-msg" style="font-size:0.85em; background:#020617; padding:10px; border-radius:8px; margin-bottom:10px; display:none; border-left: 3px solid var(--accent);"></div>
+            <h4 style="margin:0 0 10px 0; text-align:center;">PAKET GELDİ</h4>
+            <div id="in-msg" style="font-size:0.8em; background:#020617; padding:10px; border-radius:8px; margin-bottom:10px; display:none;"></div>
             <div id="incoming-list"></div>
-            <button class="btn" style="margin-top:15px; font-size:0.8em; border:none;" onclick="location.reload()">YENİ TRANSFER</button>
+            <button class="btn" style="margin-top:15px; background:transparent; color:white; border:1px solid white;" onclick="location.reload()">YENİ TRANSFER</button>
         </div>
     </div>
 </div>
 
 <div id="editor-layer">
-    <h3 style="color:white; margin-bottom:10px;">DÜZENLENİYOR...</h3>
+    <h3 style="color:white;">DÜZENLE</h3>
     <canvas id="editor-canvas"></canvas>
     <div style="display:flex; gap:10px; margin-top:20px; width:90%; max-width:400px;">
-        <button class="btn" onclick="closeEditor(false)" style="color:#ef4444; border-color:#ef4444;">İPTAL</button>
-        <button class="btn" onclick="closeEditor(true)" style="background:var(--accent); color:#020617; border:none;">KAYDET</button>
+        <button class="btn" onclick="closeEditor(false)" style="background:#ef4444;">İPTAL</button>
+        <button class="btn" onclick="closeEditor(true)">KAYDET</button>
     </div>
 </div>
 
@@ -84,12 +85,12 @@
         new QRCode(document.getElementById("qrcode"), { text: window.location.href.split('?')[0] + "?key=" + id, width: 160, height: 160 });
         statusEl.innerText = "HAZIR: " + id;
         const urlKey = new URLSearchParams(window.location.search).get('key');
-        if (urlKey) { document.getElementById('target-id').value = urlKey; setTimeout(() => connectToPeer(urlKey), 800); }
+        if (urlKey) { document.getElementById('target-id').value = urlKey; setTimeout(() => connectToPeer(urlKey), 500); }
     });
 
     function connectToPeer(id) {
         if(!id || id === myID) return;
-        statusEl.innerText = "BAĞLANILIYOR...";
+        statusEl.innerText = "BAĞLANIYOR...";
         conn = peer.connect(id, { reliable: true });
         setupEvents();
     }
@@ -98,7 +99,7 @@
 
     function setupEvents() {
         conn.on('open', () => {
-            statusEl.innerText = "✅ SENKRONİZASYON TAMAM";
+            statusEl.innerText = "✅ SENKRONİZE";
             document.getElementById('setup-area').style.display = 'none';
             document.getElementById('app-area').style.display = 'block';
         });
@@ -109,13 +110,13 @@
         const files = Array.from(e.target.files);
         if(files.length === 0) return;
         
-        statusEl.innerText = "Yükleniyor...";
+        statusEl.innerText = "Dosyalar okunuyor...";
         for(let f of files) {
             const dataUrl = f.type.startsWith('image/') ? await toDataUrl(f) : null;
             fileQueue.push({ file: f, name: f.name, type: f.type, preview: dataUrl, edited: false });
         }
         updateUI();
-        statusEl.innerText = "Dosyalar hazır.";
+        statusEl.innerText = "Dosyalar eklendi.";
     }
 
     function toDataUrl(file) {
@@ -128,16 +129,15 @@
 
     function updateUI() {
         const list = document.getElementById('file-list-ui');
-        if(fileQueue.length === 0) { list.innerHTML = "Henüz dosya eklenmedi."; return; }
-        list.innerHTML = "";
+        list.innerHTML = fileQueue.length === 0 ? "Seçili dosya yok." : "";
         fileQueue.forEach((item, idx) => {
             const div = document.createElement('div');
             div.className = "file-item";
             div.innerHTML = `
-                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.name}</span>
-                <div style="display:flex; gap:8px;">
-                    ${item.type.startsWith('image/') ? `<button onclick="openEditor(${idx})" style="border:1px solid #fbbf24; color:#fbbf24; background:none; border-radius:5px; padding:4px 8px; cursor:pointer;">✏️</button>` : ''}
-                    <button onclick="removeItem(${idx})" style="border:1px solid #ef4444; color:#ef4444; background:none; border-radius:5px; padding:4px 8px; cursor:pointer;">X</button>
+                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:60%;">${item.name}</span>
+                <div>
+                    ${item.type.startsWith('image/') ? `<button onclick="openEditor(${idx})" style="padding:4px; border:1px solid #fbbf24; color:#fbbf24; background:none; border-radius:4px; margin-right:5px;">✏️</button>` : ''}
+                    <button onclick="removeItem(${idx})" style="padding:4px; border:1px solid #ef4444; color:#ef4444; background:none; border-radius:4px;">X</button>
                 </div>
             `;
             list.appendChild(div);
@@ -148,9 +148,9 @@
 
     function openEditor(idx) {
         currentEditIdx = idx;
-        document.getElementById('editor-layer').style.display = 'flex';
         const img = new Image();
         img.onload = () => {
+            document.getElementById('editor-layer').style.display = 'flex';
             canvas.width = img.width > 800 ? 800 : img.width;
             canvas.height = (img.height / img.width) * canvas.width;
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -182,9 +182,9 @@
 
     async function sendAll() {
         if(!conn || !conn.open) return alert("Bağlantı koptu!");
-        if(fileQueue.length === 0) return alert("Dosya seçilmedi!");
+        if(fileQueue.length === 0) return alert("Dosya seçin!");
         
-        statusEl.innerText = "Veriler ışınlanıyor...";
+        statusEl.innerText = "Gönderiliyor...";
         const payload = { msg: document.getElementById('secret-msg').value, files: [] };
 
         for(let item of fileQueue) {
@@ -193,7 +193,7 @@
         }
 
         conn.send(payload);
-        statusEl.innerText = "✅ PAKET GÖNDERİLDİ!";
+        statusEl.innerText = "✅ BAŞARILI!";
         fileQueue = []; updateUI();
     }
 
@@ -201,18 +201,16 @@
         document.getElementById('app-area').style.display = 'none';
         document.getElementById('receive-area').style.display = 'block';
         if(data.msg) {
-            const msgBox = document.getElementById('in-msg');
-            msgBox.innerText = "NOT: " + data.msg;
-            msgBox.style.display = "block";
+            const m = document.getElementById('in-msg');
+            m.innerText = "NOT: " + data.msg; m.style.display = "block";
         }
         const list = document.getElementById('incoming-list');
         list.innerHTML = "";
         data.files.forEach(f => {
-            const blob = new Blob([f.data], {type: f.type});
-            const url = URL.createObjectURL(blob);
+            const url = URL.createObjectURL(new Blob([f.data], {type: f.type}));
             const div = document.createElement('div');
             div.className = "file-item";
-            div.innerHTML = `<span>${f.name}</span><a href="${url}" download="${f.name}"><button class="btn" style="width:auto; margin:0; padding:6px 12px; font-size:0.75em;">İNDİR</button></a>`;
+            div.innerHTML = `<span>${f.name}</span><a href="${url}" download="${f.name}"><button class="btn" style="width:auto; margin:0; padding:5px 10px; font-size:0.7em;">İNDİR</button></a>`;
             list.appendChild(div);
         });
         statusEl.innerText = "PAKET ALINDI!";
@@ -220,4 +218,3 @@
 </script>
 </body>
 </html>
-
