@@ -3,74 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>bsharedrop - Pro</title>
+    <title>bsharedrop - Multi-Drop</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { --bg: #020617; --accent: #22d3ee; --panel: #0f172a; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--accent); margin: 0; padding: 10px; display: flex; justify-content: center; }
-        .card { background: var(--panel); padding: 20px; border-radius: 12px; width: 100%; max-width: 500px; border: 1px solid #1e293b; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        .status { background: #1e293b; padding: 8px; border-radius: 8px; margin-bottom: 12px; font-size: 0.75em; text-align: center; border: 1px solid var(--accent); }
+        .card { background: var(--panel); padding: 20px; border-radius: 16px; width: 100%; max-width: 500px; border: 1px solid #1e293b; }
+        .status { background: #1e293b; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.75em; text-align: center; border: 1px solid var(--accent); }
         
-        #qr-container { background: white; padding: 15px; border-radius: 12px; margin: 10px 0; display: flex; flex-direction: column; align-items: center; }
-        .big-key { color: #020617; font-size: 1.5em; font-weight: 900; margin-top: 8px; font-family: monospace; border-top: 1px dashed #ccc; width: 100%; text-align: center; }
+        #qr-container { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; }
+        .big-key { color: #020617; font-size: 1.6em; font-weight: 900; margin-top: 10px; font-family: monospace; }
         
-        input, button { background: #1e293b; border: 1px solid #334155; color: white; padding: 12px; width: 100%; margin-bottom: 8px; border-radius: 8px; outline: none; }
-        button { cursor: pointer; color: var(--accent); font-weight: bold; border-color: var(--accent); transition: 0.2s; }
-        button:hover { background: var(--accent); color: #020617; }
+        input, button { background: #1e293b; border: 1px solid #334155; color: white; padding: 12px; width: 100%; margin-bottom: 10px; border-radius: 10px; outline: none; }
+        button { cursor: pointer; color: var(--accent); font-weight: bold; border-color: var(--accent); }
+        .btn-send { background: var(--accent); color: #020617; border: none; font-size: 1.1em; height: 55px; }
+
+        /* Dosya Listesi Alanı */
+        .file-list { margin: 15px 0; max-height: 200px; overflow-y: auto; background: rgba(255,255,255,0.03); border-radius: 8px; padding: 5px; }
+        .file-item { display: flex; align-items: center; justify-content: space-between; background: #1e293b; padding: 8px; margin-bottom: 5px; border-radius: 6px; font-size: 0.8em; }
+        .file-item img { width: 30px; height: 30px; border-radius: 4px; object-fit: cover; }
+
+        /* Editor Modal */
+        #editor-layer { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 100; flex-direction: column; align-items: center; padding: 10px; }
+        canvas { background: white; max-width: 100%; height: auto; border-radius: 8px; touch-action: none; }
         
-        canvas { background: white; border-radius: 8px; width: 100%; height: 280px; touch-action: none; cursor: crosshair; }
-        .preview-box { border: 2px dashed var(--accent); padding: 10px; margin: 10px 0; border-radius: 8px; text-align: center; background: rgba(34, 211, 238, 0.05); }
-        #incoming-preview { max-width: 100%; border-radius: 4px; margin-top: 10px; }
+        #receive-area { display: none; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2 style="text-align:center; margin:0 0 10px 0;">bsharedrop v7 ⚡</h2>
+    <h2 style="text-align:center; margin:0 0 15px 0;">bsharedrop MULTI ⚡</h2>
     <div id="status" class="status">SİSTEM YÜKLENİYOR...</div>
 
     <div id="setup-area">
         <div id="qr-container"><div id="qrcode"></div><div class="big-key" id="my-id-display">...</div></div>
-        <input type="text" id="target-id" placeholder="HEDEF ANAHTARI GİRİN">
-        <button onclick="connectToPeer(document.getElementById('target-id').value)">BAĞLAN VE SENKRONİZE OL</button>
+        <input type="text" id="target-id" placeholder="HEDEF ANAHTARI">
+        <button onclick="connectToPeer(document.getElementById('target-id').value)">BAĞLAN</button>
     </div>
 
     <div id="app-area" style="display:none;">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-            <span style="font-size: 0.7em;">TUVAL / DÜZENLEME</span>
-            <button style="width:auto; padding:4px 10px; font-size:0.6em;" onclick="clearCanvas()">TEMİZLE</button>
-        </div>
-        <canvas id="live-canvas"></canvas>
+        <input type="file" id="file-input" multiple style="display:none;" onchange="handleFiles(event)">
+        <button onclick="document.getElementById('file-input').click()">➕ DOSYALARI EKLE</button>
         
-        <div style="margin: 10px 0;">
-            <input type="file" id="file-input" style="font-size:0.8em;" onchange="handleFileSelect(event)">
-            <input type="text" id="secret-msg" placeholder="Alıcıya gizli bir not bırakın...">
-        </div>
-        
-        <button id="send-btn" onclick="sendData()" style="background: var(--accent); color: #020617; height: 50px; font-size: 1.1em;">PAKETİ FIRLAT 🚀</button>
+        <div class="file-list" id="file-list-ui"></div>
+
+        <input type="text" id="secret-msg" placeholder="Paket notu...">
+        <button class="btn-send" onclick="sendAll()">PAKETİ FIRLAT 🚀</button>
     </div>
 
-    <div id="receive-area" style="display:none;">
-        <div class="preview-box">
-            <h4 style="margin:0;">YENİ DOSYA GELDİ!</h4>
-            <p id="file-info" style="font-size:0.8em; color: #94a3b8; margin: 5px 0;"></p>
-            <div id="msg-display" style="font-style: italic; color: #fff; background: #334155; padding: 5px; margin: 5px 0; font-size: 0.85em; border-radius: 4px; display: none;"></div>
-            <img id="incoming-preview" style="display:none;">
-            <a id="download-link" style="text-decoration:none; margin-top:10px; display:block;"><button>DOSYAYI KAYDET</button></a>
+    <div id="receive-area">
+        <div style="background: #1e293b; padding: 15px; border-radius: 12px; border: 1px solid var(--accent);">
+            <h4 style="margin:0 0 10px 0; text-align:center;">GELEN VERİ PAKETİ</h4>
+            <div id="in-msg" style="font-size:0.8em; background:#0f172a; padding:10px; border-radius:6px; margin-bottom:10px; display:none;"></div>
+            <div id="incoming-list"></div>
+            <button onclick="location.reload()" style="width:100%; margin-top:10px; font-size:0.7em; border:none;">YENİ TRANSFER</button>
         </div>
-        <button onclick="resetUI()" style="font-size:0.7em; border:none; opacity:0.6;">Yeni Gönderi Bekle</button>
+    </div>
+</div>
+
+<div id="editor-layer">
+    <h3 style="color:white; margin:10px 0;">DÜZENLENİYOR...</h3>
+    <canvas id="editor-canvas"></canvas>
+    <div style="display:flex; gap:10px; margin-top:15px; width:100%; max-width:400px;">
+        <button onclick="closeEditor(false)" style="flex:1; border-color:red; color:red;">İPTAL</button>
+        <button onclick="closeEditor(true)" style="flex:2; background:var(--accent); color:black;">KAYDET VE GÜNCELLE</button>
     </div>
 </div>
 
 <script>
     const statusEl = document.getElementById('status');
-    const canvas = document.getElementById('live-canvas');
+    const canvas = document.getElementById('editor-canvas');
     const ctx = canvas.getContext('2d');
     const myID = 'BS-' + Math.random().toString(36).substr(2, 5).toUpperCase();
     const peer = new Peer(myID);
-    let conn;
-    let selectedFile = null;
+    let conn, fileQueue = [], currentEditIdx = null;
 
     peer.on('open', (id) => {
         document.getElementById('my-id-display').innerText = id;
@@ -82,7 +90,6 @@
 
     function connectToPeer(id) {
         if(!id || id === myID) return;
-        statusEl.innerText = "BAĞLANTI KURULUYOR...";
         conn = peer.connect(id, { reliable: true });
         setupEvents();
     }
@@ -91,126 +98,130 @@
 
     function setupEvents() {
         conn.on('open', () => {
-            statusEl.innerText = "✅ CİHAZLAR SENKRONİZE";
+            statusEl.innerText = "✅ SENKRONİZE";
             document.getElementById('setup-area').style.display = 'none';
             document.getElementById('app-area').style.display = 'block';
         });
-        conn.on('data', (data) => {
-            if(data.type === 'draw') remoteDraw(data.x, data.y, data.isNew);
-            else if(data.type === 'clear') ctx.clearRect(0,0,canvas.width,canvas.height);
-            else if(data.type === 'payload') showIncoming(data);
+        conn.on('data', (data) => showIncoming(data));
+    }
+
+    // DOSYA İŞLEMLERİ
+    async function handleFiles(e) {
+        const files = Array.from(e.target.files);
+        for(let f of files) {
+            const dataUrl = f.type.startsWith('image/') ? await toDataUrl(f) : null;
+            fileQueue.push({ file: f, name: f.name, type: f.type, preview: dataUrl, edited: null });
+        }
+        updateUI();
+    }
+
+    function toDataUrl(file) {
+        return new Promise(res => {
+            const r = new FileReader();
+            r.onload = (e) => res(e.target.result);
+            r.readAsDataURL(file);
         });
     }
 
-    // --- AKICI ÇİZİM SİSTEMİ ---
-    canvas.width = canvas.offsetWidth; canvas.height = 280;
-    ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.strokeStyle = '#22d3ee';
-    let drawing = false;
-
-    function getPos(e) {
-        const r = canvas.getBoundingClientRect();
-        const c = e.touches ? e.touches[0] : e;
-        return { x: (c.clientX - r.left), y: (c.clientY - r.top) };
+    function updateUI() {
+        const list = document.getElementById('file-list-ui');
+        list.innerHTML = "";
+        fileQueue.forEach((item, idx) => {
+            const div = document.createElement('div');
+            div.className = "file-item";
+            div.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="${item.preview || 'https://cdn-icons-png.flaticon.com/512/124/124837.png'}">
+                    <span>${item.name.substring(0,15)}...</span>
+                </div>
+                ${item.type.startsWith('image/') ? `<button onclick="openEditor(${idx})" style="padding:2px 8px; font-size:0.7em;">✏️</button>` : ''}
+            `;
+            list.appendChild(div);
+        });
     }
 
-    canvas.onmousedown = canvas.ontouchstart = (e) => {
-        drawing = true; const p = getPos(e);
-        ctx.beginPath(); ctx.moveTo(p.x, p.y);
-        if(conn && conn.open) conn.send({type:'draw', x:p.x, y:p.y, isNew:true});
-    };
+    // EDİTÖR
+    function openEditor(idx) {
+        currentEditIdx = idx;
+        document.getElementById('editor-layer').style.display = 'flex';
+        const img = new Image();
+        img.onload = () => {
+            canvas.width = window.innerWidth * 0.95;
+            canvas.height = window.innerHeight * 0.7;
+            ctx.fillStyle = "white"; ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        };
+        img.src = fileQueue[idx].preview;
+        ctx.strokeStyle = "red"; ctx.lineWidth = 5; ctx.lineCap = "round";
+    }
 
+    let drawing = false;
+    canvas.onmousedown = canvas.ontouchstart = (e) => { drawing = true; ctx.beginPath(); };
     canvas.onmousemove = canvas.ontouchmove = (e) => {
         if(!drawing) return; e.preventDefault();
-        const p = getPos(e);
-        ctx.lineTo(p.x, p.y); ctx.stroke();
-        if(conn && conn.open) conn.send({type:'draw', x:p.x, y:p.y, isNew:false});
+        const r = canvas.getBoundingClientRect();
+        const c = e.touches ? e.touches[0] : e;
+        ctx.lineTo(c.clientX - r.left, c.clientY - r.top); ctx.stroke();
     };
+    window.onmouseup = window.ontouchend = () => drawing = false;
 
-    window.onmouseup = window.ontouchend = () => { drawing = false; };
-
-    function remoteDraw(x, y, isNew) {
-        if(isNew) { ctx.beginPath(); ctx.moveTo(x, y); }
-        else { ctx.lineTo(x, y); ctx.stroke(); }
-    }
-
-    function clearCanvas() { ctx.clearRect(0,0,canvas.width,canvas.height); if(conn) conn.send({type:'clear'}); }
-
-    // --- DOSYA VE TRANSFER ---
-    function handleFileSelect(e) {
-        selectedFile = e.target.files[0];
-        if(selectedFile && selectedFile.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const img = new Image();
-                img.onload = () => { ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img, 0, 0, canvas.width, canvas.height); };
-                img.src = ev.target.result;
-            };
-            reader.readAsDataURL(selectedFile);
+    function closeEditor(save) {
+        if(save) {
+            fileQueue[currentEditIdx].preview = canvas.toDataURL("image/png");
+            fileQueue[currentEditIdx].edited = true;
+            updateUI();
         }
+        document.getElementById('editor-layer').style.display = 'none';
     }
 
-    function sendData() {
-        if(!conn || !conn.open) return alert("Bağlantı yok!");
+    // GÖNDERİM
+    async function sendAll() {
+        if(fileQueue.length === 0) return alert("Dosya ekleyin!");
         statusEl.innerText = "PAKETLENİYOR...";
         
-        // Eğer dosyada çizim yapıldıysa tuvali de bir resim olarak ekle
-        const editedCanvas = canvas.toDataURL("image/png");
-
-        const reader = new FileReader();
-        reader.onload = () => {
-            conn.send({
-                type: 'payload',
-                file: reader.result,
-                fileName: selectedFile ? selectedFile.name : "cizim.png",
-                fileSize: selectedFile ? (selectedFile.size / 1024).toFixed(1) + " KB" : "---",
-                isImage: selectedFile && selectedFile.type.startsWith('image/'),
-                note: document.getElementById('secret-msg').value,
-                canvasData: editedCanvas
-            });
-            statusEl.innerText = "GÖNDERİM BAŞARILI! ✅";
+        const payload = {
+            msg: document.getElementById('secret-msg').value,
+            files: []
         };
 
-        if(selectedFile) reader.readAsArrayBuffer(selectedFile);
-        else {
-            // Sadece tuval gönderiliyorsa
-            fetch(editedCanvas).then(res => res.arrayBuffer()).then(buf => {
-                conn.send({ type: 'payload', file: buf, fileName: "cizim.png", fileSize: "---", isImage: true, note: document.getElementById('secret-msg').value });
-                statusEl.innerText = "ÇİZİM GÖNDERİLDİ! ✅";
+        for(let item of fileQueue) {
+            const buffer = item.edited ? await (await fetch(item.preview)).arrayBuffer() : await item.file.arrayBuffer();
+            payload.files.push({
+                name: item.name,
+                type: item.type,
+                data: buffer
             });
         }
+
+        conn.send(payload);
+        statusEl.innerText = "TÜM PAKET IŞINLANDI! ✅";
+        fileQueue = []; updateUI();
     }
 
+    // ALIM
     function showIncoming(data) {
         document.getElementById('app-area').style.display = 'none';
         document.getElementById('receive-area').style.display = 'block';
-        
-        document.getElementById('file-info').innerText = `${data.fileName} (${data.fileSize})`;
-        
-        if(data.note) {
-            const n = document.getElementById('msg-display');
-            n.innerText = "NOT: " + data.note; n.style.display = "block";
+        if(data.msg) {
+            document.getElementById('in-msg').innerText = "NOT: " + data.msg;
+            document.getElementById('in-msg').style.display = "block";
         }
 
-        const previewImg = document.getElementById('incoming-preview');
-        if(data.isImage || data.canvasData) {
-            previewImg.src = data.canvasData || URL.createObjectURL(new Blob([data.file]));
-            previewImg.style.display = "block";
-        } else {
-            previewImg.style.display = "none";
-        }
-
-        const dl = document.getElementById('download-link');
-        dl.href = URL.createObjectURL(new Blob([data.file]));
-        dl.download = data.fileName;
-        statusEl.innerText = "DOSYA GELDİ!";
-    }
-
-    function resetUI() {
-        document.getElementById('receive-area').style.display = 'none';
-        document.getElementById('app-area').style.display = 'block';
-        statusEl.innerText = "YENİ GÖNDERİ İÇİN HAZIR";
+        const list = document.getElementById('incoming-list');
+        list.innerHTML = "";
+        data.files.forEach(f => {
+            const blob = new Blob([f.data], {type: f.type});
+            const url = URL.createObjectURL(blob);
+            const div = document.createElement('div');
+            div.className = "file-item";
+            div.innerHTML = `
+                <span>${f.name}</span>
+                <a href="${url}" download="${f.name}"><button style="padding:4px 8px; font-size:0.7em;">İNDİR</button></a>
+            `;
+            list.appendChild(div);
+        });
+        statusEl.innerText = "PAKET ALINDI!";
     }
 </script>
 </body>
 </html>
-
