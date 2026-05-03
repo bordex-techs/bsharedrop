@@ -3,132 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Dosya Paylaşımı</title>
+    <title>QuickShare Ultra</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-        .btn { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin: 5px; width: 100%; }
-        #qrcode { margin: 20px auto; display: flex; justify-content: center; border: 10px solid white; }
-        input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
-        .status { font-size: 0.9em; color: #555; margin: 10px 0; font-weight: bold; }
-        hr { border: 0; border-top: 1px solid #eee; margin: 20px 0; }
+        :root { --primary: #6366f1; --bg: #0f172a; --card-bg: #1e293b; --text: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: var(--card-bg); padding: 25px; border-radius: 24px; box-shadow: 0 20px 25px rgba(0,0,0,0.3); width: 90%; max-width: 420px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        #qrcode { background: white; padding: 12px; border-radius: 12px; display: inline-block; margin: 15px 0; }
+        .btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: 600; margin-top: 10px; }
+        .status-badge { background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px; font-size: 12px; margin-bottom: 10px; }
+        
+        /* Özellik: Sohbet Alanı */
+        #chat-area { margin-top: 20px; text-align: left; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 12px; height: 120px; overflow-y: auto; display: none; }
+        .msg { font-size: 13px; margin-bottom: 5px; padding: 5px 8px; border-radius: 5px; background: rgba(255,255,255,0.1); }
+        #chat-input-container { display: none; margin-top: 10px; gap: 5px; }
+        #chat-msg { flex: 1; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; padding: 8px; }
+        
+        /* Özellik: Self-Destruct Switch */
+        .switch-container { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 15px 0; font-size: 14px; color: #94a3b8; }
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #ef4444; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        #download-link { display: none; margin-top: 15px; padding: 12px; background: #22c55e; color: white; border-radius: 10px; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Dosya Paylaş (QR)</h2>
+    <h2 id="title">QuickShare</h2>
     
-    <div id="my-info">
-        <p>Bu QR kodu diğer cihaza okutun:</p>
+    <div id="setup-area">
         <div id="qrcode"></div>
-        <p>ID: <strong id="my-id">Oluşturuluyor...</strong></p>
+        <div class="status-badge">ID: <span id="my-id">...</span></div>
+        <div class="switch-container">
+            <span>Gizli Mod (Kendi Kendini İmha)</span>
+            <label class="switch"><input type="checkbox" id="destruct-toggle"><span class="slider"></span></label>
+        </div>
     </div>
-
-    <hr>
 
     <div id="transfer-area" style="display:none;">
-        <p id="connected-with"></p>
+        <div id="chat-area"></div>
+        <div id="chat-input-container">
+            <input type="text" id="chat-msg" placeholder="Mesaj yaz...">
+            <button class="btn" style="width:auto; margin:0;" onclick="sendChat()">Gönder</button>
+        </div>
+        <hr style="border:0; border-top:1px solid #334155; margin:15px 0;">
         <input type="file" id="file-input">
-        <button class="btn" id="send-btn">Dosyayı Gönder</button>
+        <button class="btn" id="send-btn">Dosya Gönder</button>
     </div>
 
-    <p id="status" class="status">Durum: Bekleniyor...</p>
-    <a id="download-link" style="display:none; font-weight:bold; color:#28a745; text-decoration: none;">⬇ Dosyayı İndirmek İçin Tıkla</a>
+    <a id="download-link">📥 Dosyayı İndir</a>
+    <p id="status" style="font-size: 12px; color: #94a3b8; margin-top: 10px;"></p>
 </div>
 
 <script>
     const statusEl = document.getElementById('status');
     const myIdEl = document.getElementById('my-id');
     const transferArea = document.getElementById('transfer-area');
-    const connectedWithEl = document.getElementById('connected-with');
+    const setupArea = document.getElementById('setup-area');
+    const chatArea = document.getElementById('chat-area');
+    const chatInputContainer = document.getElementById('chat-input-container');
+    const destructToggle = document.getElementById('destruct-toggle');
     
-    // PeerJS bağlantısını başlat
     const peer = new Peer();
     let conn;
 
-    // URL'deki "id" parametresini kontrol et
     const urlParams = new URLSearchParams(window.location.search);
     const targetPeerId = urlParams.get('id');
 
-    // 1. Peer açıldığında çalışacaklar
     peer.on('open', (id) => {
         myIdEl.innerText = id;
-        
-        // QR Kodun içine mevcut URL + ?id=ID ekliyoruz
         const shareUrl = window.location.origin + window.location.pathname + "?id=" + id;
-        
-        new QRCode(document.getElementById("qrcode"), {
-            text: shareUrl,
-            width: 200,
-            height: 200
-        });
-
-        // Eğer linkten tıklandığında bir ID varsa otomatik bağlan
-        if (targetPeerId) {
-            statusEl.innerText = "Otomatik bağlanılıyor...";
-            connectToPeer(targetPeerId);
-        }
+        new QRCode(document.getElementById("qrcode"), { text: shareUrl, width: 160, height: 160 });
+        if (targetPeerId) connectToPeer(targetPeerId);
     });
 
-    // 2. Bağlantı isteği geldiğinde (Alıcı tarafı)
-    peer.on('connection', (c) => {
-        conn = c;
-        setupEvents();
-    });
+    peer.on('connection', (c) => { conn = c; setupEvents(); });
 
-    // 3. Bağlantı Kurma Fonksiyonu (Gönderici tarafı)
-    function connectToPeer(id) {
-        conn = peer.connect(id);
-        setupEvents();
-    }
+    function connectToPeer(id) { conn = peer.connect(id); setupEvents(); }
 
-    // 4. Olayları Ayarla (Veri alışverişi vb.)
     function setupEvents() {
         conn.on('open', () => {
-            statusEl.innerText = "Bağlantı Başarılı!";
-            statusEl.style.color = "green";
+            setupArea.style.display = "none";
             transferArea.style.display = "block";
-            connectedWithEl.innerText = "Bağlı cihaz: " + conn.peer;
+            chatArea.style.display = "block";
+            chatInputContainer.style.display = "flex";
+            statusEl.innerText = "Bağlantı aktif.";
         });
         
         conn.on('data', (data) => {
-            const blob = new Blob([data.file]);
-            const url = URL.createObjectURL(blob);
-            const dl = document.getElementById('download-link');
-            dl.href = url;
-            dl.download = data.filename;
-            dl.style.display = "block";
-            dl.innerText = "⬇ İndir: " + data.filename;
-            statusEl.innerText = "Yeni dosya geldi!";
-        });
-
-        conn.on('close', () => {
-            statusEl.innerText = "Bağlantı kesildi.";
-            transferArea.style.display = "none";
+            if(data.type === 'chat') {
+                addChatMessage("Karşı taraf", data.msg);
+            } else if(data.type === 'file') {
+                const blob = new Blob([data.file]);
+                const url = URL.createObjectURL(blob);
+                const dl = document.getElementById('download-link');
+                dl.href = url;
+                dl.download = data.filename;
+                dl.style.display = "block";
+                dl.onclick = () => {
+                    if(data.destruct) {
+                        setTimeout(() => {
+                            alert("Gizli dosya indirildi ve imha edildi. Bağlantı kesiliyor.");
+                            location.reload();
+                        }, 1000);
+                    }
+                };
+                statusEl.innerText = "Dosya alındı!";
+            }
         });
     }
 
-    // 5. Dosya Gönderme İşlemi
-    document.getElementById('send-btn').onclick = () => {
-        const fileInput = document.getElementById('file-input');
-        if (fileInput.files.length === 0) {
-            alert("Lütfen bir dosya seçin.");
-            return;
-        }
+    function sendChat() {
+        const msg = document.getElementById('chat-msg').value;
+        if(!msg) return;
+        conn.send({ type: 'chat', msg: msg });
+        addChatMessage("Sen", msg);
+        document.getElementById('chat-msg').value = "";
+    }
 
-        const file = fileInput.files[0];
-        statusEl.innerText = "Dosya okunuyor...";
-        
+    function addChatMessage(sender, msg) {
+        const div = document.createElement('div');
+        div.className = 'msg';
+        div.innerText = `${sender}: ${msg}`;
+        chatArea.appendChild(div);
+        chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    document.getElementById('send-btn').onclick = () => {
+        const file = document.getElementById('file-input').files[0];
+        if(!file) return alert("Dosya seç!");
         const reader = new FileReader();
         reader.onload = () => {
             conn.send({ 
+                type: 'file', 
                 file: reader.result, 
-                filename: file.name 
+                filename: file.name,
+                destruct: destructToggle.checked 
             });
-            statusEl.innerText = "Dosya gönderildi!";
+            statusEl.innerText = "Gönderildi!";
         };
         reader.readAsArrayBuffer(file);
     };
