@@ -99,7 +99,7 @@
 
 <div class="card">
     <h1>BSHAREDROP</h1>
-    <div class="tagline">P2P File Transfer</div>
+    <div class="tagline">P2P File Transfer (Serverless)</div>
 
     <div class="nav-tabs" id="main-nav">
         <button class="nav-btn active" onclick="setMode('single')">BİREYSEL BAĞLAN</button>
@@ -161,11 +161,8 @@
     const rawCode = Math.floor(100000 + Math.random() * 900000).toString();
     const myShortId = "bsd-" + rawCode; 
     
+    // Sunucusuz PeerJS Başlatma (PeerJS Cloud üzerinden çalışır)
     const peer = new Peer(myShortId, {
-        host: 'bsharedrop.onrender.com',
-        port: 443,
-        path: '/',
-        secure: true,
         config: {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
@@ -252,7 +249,6 @@
         }
     }
 
-    // Takılı kalmayı önleyen 6 saniyelik zaman aşımı koruması
     function startTimeoutCheck() {
         clearTimeout(connectionTimeout);
         connectionTimeout = setTimeout(() => {
