@@ -3,94 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BShareDrop | Bordex Technologies</title>
+    <title>BShareDrop Ultimate | Bordex Technologies</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --p: #00f2ff; --bg: #090a10; --card: #121420; --border: #22263d; --text: #eceff4; }
-        * { box-sizing: border-box; font-family: system-ui, sans-serif; }
-        body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 15px; }
-        .card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 20px; width: 100%; max-width: 420px; text-align: center; box-shadow: 0 10px 30px #0008; }
-        h1 { color: var(--p); margin: 0 0 10px; font-size: 22px; }
-        .nav-tabs { display: flex; background: #0005; padding: 4px; border-radius: 10px; gap: 4px; margin-bottom: 15px; }
-        .nav-btn { flex: 1; padding: 8px; border: none; background: transparent; color: #888; font-weight: bold; cursor: pointer; border-radius: 8px; }
-        .nav-btn.active { background: var(--border); color: var(--p); }
-        .btn { background: var(--p); color: #000; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; }
-        input[type="text"] { width: 100%; padding: 10px; background: #0004; border: 1px solid var(--border); border-radius: 8px; color: #fff; text-align: center; margin-bottom: 8px; }
-        #qrcode { background: #fff; padding: 8px; border-radius: 12px; display: inline-block; margin: 10px 0; }
-        #chat { height: 90px; overflow-y: auto; background: #0004; border: 1px solid var(--border); border-radius: 8px; padding: 8px; font-size: 12px; text-align: left; margin-bottom: 8px; }
-        .progress-bar { height: 6px; background: #222; border-radius: 3px; overflow: hidden; margin: 10px 0; display: none; }
-        .progress-fill { height: 100%; width: 0%; background: var(--p); transition: width 0.1s; }
-        #download-link { display: none; background: #00ff8822; color: #00ff88; border: 1px solid #00ff88; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 10px; }
-        .footer { font-size: 11px; color: #555; margin-top: 15px; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+        
+        :root { 
+            --p: #00e5ff; 
+            --p-glow: rgba(0, 229, 255, 0.4);
+            --bg: #050508; 
+            --card-bg: rgba(15, 17, 26, 0.6); 
+            --border: rgba(255, 255, 255, 0.1); 
+            --text: #f8f9fa; 
+            --success: #00ff88;
+        }
+
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        body { 
+            background: var(--bg); 
+            background-image: radial-gradient(circle at 50% 0%, #1a1c29 0%, transparent 70%);
+            color: var(--text); 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            min-height: 100vh; margin: 0; padding: 20px; overflow-x: hidden;
+        }
+
+        /* Glassmorphism Card */
+        .card { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border); padding: 30px; border-radius: 24px; 
+            width: 100%; max-width: 480px; text-align: center; 
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1); 
+            position: relative; z-index: 10;
+        }
+
+        h1 { color: var(--p); margin: 0 0 5px; font-size: 28px; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px var(--p-glow); }
+        .tagline { font-size: 12px; color: #8ba0b2; margin-bottom: 25px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* Navigation */
+        .nav-tabs { display: flex; background: rgba(0,0,0,0.4); padding: 5px; border-radius: 14px; gap: 5px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .nav-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #6c7a89; font-weight: 800; cursor: pointer; border-radius: 10px; font-size: 13px; }
+        .nav-btn.active { background: rgba(255,255,255,0.05); color: var(--p); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+
+        /* Inputs & Buttons */
+        .input-group { position: relative; margin-bottom: 15px; }
+        input[type="text"] { 
+            width: 100%; padding: 15px; background: rgba(0,0,0,0.5); 
+            border: 1px solid var(--border); border-radius: 12px; color: #fff; 
+            text-align: center; font-size: 18px; font-weight: 800; letter-spacing: 4px; outline: none;
+        }
+        input[type="text"]:focus { border-color: var(--p); box-shadow: 0 0 15px var(--p-glow); }
+        input::placeholder { color: #4a5568; letter-spacing: 1px; font-weight: 600; font-size: 14px; }
+
+        .btn { 
+            background: linear-gradient(135deg, var(--p), #00b4d8); color: #000; border: none; 
+            padding: 14px 20px; border-radius: 12px; font-weight: 900; cursor: pointer; 
+            width: 100%; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; 
+            box-shadow: 0 10px 20px var(--p-glow); 
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 15px 25px var(--p-glow); }
+        .btn:active { transform: translateY(1px); }
+
+        /* QR & ID Display */
+        #qrcode { background: #fff; padding: 10px; border-radius: 16px; display: inline-block; margin: 10px 0; }
+        .id-badge { 
+            background: rgba(0, 229, 255, 0.05); border: 1px dashed var(--p); padding: 15px; 
+            border-radius: 12px; margin: 15px 0; font-size: 24px; color: var(--p); 
+            font-weight: 900; letter-spacing: 6px; cursor: pointer; position: relative;
+        }
+        .id-badge:hover { background: rgba(0, 229, 255, 0.1); }
+        .id-badge::after { content: 'KOPYALAMAK İÇİN TIKLA'; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #8ba0b2; letter-spacing: 1px; opacity: 0; }
+        .id-badge:hover::after { opacity: 1; bottom: -15px; }
+
+        /* Transfer Area */
+        #chat { height: 120px; overflow-y: auto; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 12px; padding: 12px; font-size: 13px; text-align: left; margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .chat-msg { background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; border-left: 2px solid #4a5568; word-break: break-all; }
+        .chat-msg.me { border-left-color: var(--p); }
+        .chat-msg.system { border-left: none; color: #8ba0b2; font-style: italic; font-size: 11px; text-align: center; }
+
+        .drop-zone { border: 2px dashed var(--border); border-radius: 16px; padding: 25px 15px; cursor: pointer; margin-bottom: 15px; background: rgba(0,0,0,0.2); }
+        .drop-zone:hover, .drop-zone.dragover { border-color: var(--p); background: rgba(0, 229, 255, 0.05); }
+
+        /* Analytics & Progress */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; display: none; }
+        .stat-box { background: rgba(0,0,0,0.4); padding: 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 11px; color: #8ba0b2; font-weight: 800; }
+        .stat-val { display: block; color: var(--p); font-size: 18px; margin-top: 5px; }
+
+        .progress-bar { height: 8px; background: rgba(0,0,0,0.5); border-radius: 4px; overflow: hidden; margin: 15px 0; display: none; border: 1px solid var(--border); }
+        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--p), #00ff88); box-shadow: 0 0 10px var(--p); transition: width 0.1s linear; }
+
+        #download-link { display: none; background: rgba(0, 255, 136, 0.1); color: var(--success); border: 1px solid var(--success); padding: 15px; border-radius: 12px; text-decoration: none; font-weight: 900; margin-top: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        #download-link:hover { background: rgba(0, 255, 136, 0.2); box-shadow: 0 0 20px rgba(0, 255, 136, 0.3); }
+
+        /* Custom Toast Notification */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: rgba(15, 17, 26, 0.9); backdrop-filter: blur(10px); border-left: 4px solid var(--p); color: #fff; padding: 15px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateX(120%); animation: slideIn 0.3s forwards; }
+        .toast.error { border-left-color: #ff3366; }
+        @keyframes slideIn { to { transform: translateX(0); } }
+        @keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
+
+        .footer { font-size: 12px; color: #4a5568; margin-top: 25px; font-weight: 600; letter-spacing: 1px; }
+        .footer b { color: #8ba0b2; }
     </style>
 </head>
 <body>
 
+<div id="toast-container"></div>
+
 <div class="card">
     <h1>BSHAREDROP</h1>
+    <div class="tagline">Ultra-Speed P2P Network</div>
 
-    <!-- Üst Sayfa / Mod Seçimi -->
-    <div class="nav-tabs">
-        <button class="nav-btn active" onclick="setMode('single')">Bireysel</button>
-        <button class="nav-btn" onclick="setMode('room')">Grup Odası</button>
+    <div class="nav-tabs" id="main-nav">
+        <button class="nav-btn active" onclick="setMode('single')">BİREYSEL BAĞLANTI</button>
+        <button class="nav-btn" onclick="setMode('room')">GRUP ODASI KUR</button>
     </div>
 
     <!-- Bireysel Mod -->
     <div id="single-panel">
         <div id="qrcode"></div>
-        <p style="font-size: 11px; color: #aaa; margin: 0;">ID Kodu: <b id="my-id" style="color:var(--p)">...</b></p>
-        <input type="text" id="target-id" placeholder="Cihaz ID Girin" style="margin-top:10px;">
-        <button class="btn" onclick="connectSingle()">Bağlan</button>
+        <div class="id-badge" id="my-id" onclick="copyMyId()">...</div>
+        <div class="input-group">
+            <input type="text" id="target-id" placeholder="BAĞLANTI KODU" maxlength="6" autocomplete="off">
+        </div>
+        <button class="btn" onclick="connectSingle()">CİHAZA BAĞLAN</button>
     </div>
 
     <!-- Grup Odası Modu -->
     <div id="room-panel" style="display:none;">
-        <button class="btn" onclick="createRoom()">Oda Kur</button>
-        <p style="font-size:12px; color:#888; margin:8px 0;">veya</p>
-        <input type="text" id="room-code-input" placeholder="Oda Kodunu Girin">
-        <button class="btn" onclick="joinRoom()">Odaya Katıl</button>
+        <button class="btn" onclick="createRoom()" style="margin-bottom: 20px;">YENİ ODA KUR</button>
+        <div class="input-group">
+            <input type="text" id="room-code-input" placeholder="ODA KODUNU GİRİN" maxlength="6" autocomplete="off">
+        </div>
+        <button class="btn" style="background: linear-gradient(135deg, #4facfe, #00f2fe);" onclick="joinRoom()">ODAYA KATIL</button>
     </div>
 
-    <!-- Transfer & Chat Alanı (Ortak) -->
+    <!-- Transfer Alanı -->
     <div id="transfer-panel" style="display:none;">
-        <p id="room-status" style="font-size:12px; color:var(--p); font-weight:bold;"></p>
         <div id="chat"></div>
-        <div style="display:flex; gap:5px;">
-            <input type="text" id="chat-msg" placeholder="Mesaj yaz..." style="margin:0;">
-            <button class="btn" style="width:auto; margin:0;" onclick="sendChat()">Gönder</button>
+        <div style="display:flex; gap:10px; margin-bottom: 15px;">
+            <input type="text" id="chat-msg" placeholder="Mesaj yaz..." style="margin:0; font-size:14px; letter-spacing:0; text-align: left; padding: 12px;">
+            <button class="btn" style="width:auto; padding: 0 20px;" onclick="sendChat()">🚀</button>
         </div>
         
-        <input type="file" id="file-input" style="margin-top:10px; font-size:12px;">
-        <button class="btn" id="send-file-btn" onclick="sendFile()">Dosyayı Odadakilere Gönder</button>
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+            <span style="font-size: 30px; display: block; margin-bottom: 5px;">📁</span>
+            <span id="file-name-display" style="font-size: 13px; font-weight: 800; color: #8ba0b2;">Sürükle bırak veya dosya seç</span>
+        </div>
+        <input type="file" id="file-input" style="display: none;" onchange="updateFileName()">
         
+        <button class="btn" id="send-file-btn" onclick="startFileTransfer()">VERİYİ AKTAR</button>
+        
+        <div class="stats-grid" id="stats-grid">
+            <div class="stat-box">HIZ <span class="stat-val" id="speed-val">0.0 MB/s</span></div>
+            <div class="stat-box">KALAN <span class="stat-val" id="eta-val">0s</span></div>
+        </div>
+
         <div class="progress-bar" id="p-bar-cont"><div class="progress-fill" id="p-fill"></div></div>
-        <p style="font-size:11px; color:#aaa;" id="speed-text"></p>
     </div>
 
-    <a id="download-link">📥 Dosyayı İndir</a>
+    <a id="download-link">📥 BAĞLANTIYI KAYDET</a>
 </div>
 
 <div class="footer">© 2026 <b>Bordex Technologies</b></div>
 
 <script>
-    const peer = new Peer();
-    let conns = []; // Tüm aktif bağlantılar
+    // 1. Gelişmiş Kimlik ve Peer Üretimi (6 Haneli Sabit)
+    const myShortId = Math.floor(100000 + Math.random() * 900000).toString();
+    const peer = new Peer(myShortId, { config: {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]} });
+    
+    let conns = [];
     let isHost = false;
     let mode = 'single';
-    const CHUNK_SIZE = 64 * 1024;
+    
+    // Ağın kitlenmemesi için Ultra Hızlı 256KB chunk boyutu (Yerel Ağda Şimşek Etkisi)
+    const CHUNK_SIZE = 256 * 1024; 
 
+    // --- TEMEL BAŞLATMA ---
     peer.on('open', id => {
         document.getElementById('my-id').innerText = id;
-        new QRCode(document.getElementById("qrcode"), { text: location.href + '?id=' + id, width: 120, height: 120 });
+        new QRCode(document.getElementById("qrcode"), { 
+            text: location.origin + location.pathname + '?id=' + id, 
+            width: 140, height: 140, colorDark: "#000", colorLight: "#fff"
+        });
+        
         const autoConnect = new URLSearchParams(location.search).get('id');
-        if (autoConnect) { document.getElementById('target-id').value = autoConnect; connectSingle(); }
+        if (autoConnect) { 
+            document.getElementById('target-id').value = autoConnect; 
+            connectSingle(); 
+        }
     });
 
-    peer.on('connection', c => {
-        setupConnection(c);
-    });
+    peer.on('error', err => showToast(err.type === 'peer-unavailable' ? "Cihaz bulunamadı!" : "Ağ hatası oluştu.", "error"));
 
+    // Gelen Bağlantıları Dinleme
+    peer.on('connection', c => setupConnection(c));
+
+    // --- UI ve Mod Yönetimi ---
     function setMode(m) {
         mode = m;
         document.querySelectorAll('.nav-btn').forEach((b, i) => b.classList.toggle('active', (i===0 && m==='single') || (i===1 && m==='room')));
@@ -98,106 +209,206 @@
         document.getElementById('room-panel').style.display = m === 'room' ? 'block' : 'none';
     }
 
+    function copyMyId() {
+        navigator.clipboard.writeText(myShortId);
+        showToast("Kod kopyalandı: " + myShortId);
+    }
+
+    // --- BAĞLANTI KURULUMU ---
     function connectSingle() {
         const tid = document.getElementById('target-id').value.trim();
-        if (tid) setupConnection(peer.connect(tid));
+        if (tid.length === 6 && tid !== myShortId) setupConnection(peer.connect(tid, { reliable: true }));
+        else showToast("Geçerli bir cihaz kodu girin!", "error");
     }
 
     function createRoom() {
         isHost = true;
-        openTransferUI("Oda Kuruldu! Oda Kodu: " + peer.id);
+        openTransferUI();
+        logChat(`👑 Oda Kuruldu! Davet Kodu: ${myShortId}`, 'system');
+        showToast("Oda başarıyla oluşturuldu.");
     }
 
     function joinRoom() {
         const code = document.getElementById('room-code-input').value.trim();
-        if (code) {
-            setupConnection(peer.connect(code));
-            openTransferUI("Odaya Katılındı");
-        }
+        if (code.length === 6 && code !== myShortId) {
+            setupConnection(peer.connect(code, { reliable: true }));
+            openTransferUI();
+        } else showToast("Geçerli bir oda kodu girin!", "error");
     }
 
     function setupConnection(c) {
         c.on('open', () => {
             if (!conns.includes(c)) conns.push(c);
-            openTransferUI(mode === 'single' ? "Bağlantı Başarılı" : `Oda Aktif (${conns.length} Kişi)`);
-            logChat("Sisteme bir cihaz bağlandı.");
+            if(document.getElementById('transfer-panel').style.display === 'none') openTransferUI();
+            logChat(`⚡ Cihaz Bağlandı (ID: ${c.peer})`, 'system');
+            showToast("Bağlantı Kuruldu!");
         });
 
-        let chunks = [], fileMeta = null;
+        let chunks = [], fileMeta = null, bytesReceived = 0, lastTime = Date.now();
+        
         c.on('data', data => {
-            // Oda kurucusu ise gelen veriyi diğer üyelere dağıtır (Relay)
+            // Host ise gelen veriyi diğerlerine relay (köprü) yap
             if (isHost) broadcast(data, c);
 
-            if (data.type === 'chat') logChat(data.sender + ": " + data.text);
-            if (data.type === 'start') { chunks = []; fileMeta = data; document.getElementById('p-bar-cont').style.display = 'block'; }
-            if (data.type === 'chunk') { chunks.push(data.chunk); document.getElementById('p-fill').style.width = data.progress + "%"; }
+            if (data.type === 'chat') logChat(`Cihaz-${data.sender}: ${data.text}`, 'peer');
+            
+            if (data.type === 'start') { 
+                chunks = []; fileMeta = data; bytesReceived = 0;
+                document.getElementById('p-bar-cont').style.display = 'block';
+                document.getElementById('stats-grid').style.display = 'grid';
+                document.getElementById('download-link').style.display = 'none';
+                logChat(`📥 Dosya alınıyor: ${fileMeta.name}`, 'system');
+            }
+            
+            if (data.type === 'chunk') { 
+                chunks.push(data.chunk); 
+                bytesReceived += data.chunk.byteLength;
+                
+                // Canlı Analitik Hesaplama
+                const now = Date.now();
+                const elapsed = (now - lastTime) / 1000;
+                if(elapsed > 0.5) {
+                    const speed = (bytesReceived / 1024 / 1024) / elapsed; // MB/s
+                    const remainingBytes = fileMeta.size - bytesReceived;
+                    const eta = speed > 0 ? (remainingBytes / 1024 / 1024) / speed : 0;
+                    
+                    document.getElementById('speed-val').innerText = speed.toFixed(1) + " MB/s";
+                    document.getElementById('eta-val').innerText = Math.max(0, Math.round(eta)) + "s";
+                }
+                document.getElementById('p-fill').style.width = data.progress + "%";
+            }
+            
             if (data.type === 'end') {
                 const blob = new Blob(chunks);
                 const dl = document.getElementById('download-link');
                 dl.href = URL.createObjectURL(blob);
                 dl.download = fileMeta.name;
                 dl.style.display = 'block';
-                logChat("Dosya alındı: " + fileMeta.name);
+                document.getElementById('p-fill').style.width = "100%";
+                logChat(`✅ Dosya Tamamlandı: ${fileMeta.name}`, 'system');
+                showToast("Dosya başarıyla alındı!");
             }
         });
 
         c.on('close', () => {
             conns = conns.filter(conn => conn !== c);
-            logChat("Bir cihaz ayrıldı.");
+            logChat(`❌ Cihaz Ayrıldı (ID: ${c.peer})`, 'system');
         });
     }
 
     function broadcast(data, excludeConn = null) {
-        conns.forEach(c => {
-            if (c !== excludeConn && c.open) c.send(data);
-        });
+        conns.forEach(c => { if (c !== excludeConn && c.open) c.send(data); });
     }
 
-    function openTransferUI(status) {
+    function openTransferUI() {
+        document.getElementById('main-nav').style.display = 'none';
         document.getElementById('single-panel').style.display = 'none';
         document.getElementById('room-panel').style.display = 'none';
         document.getElementById('transfer-panel').style.display = 'block';
-        document.getElementById('room-status').innerText = status;
     }
 
+    // --- SOHBET SİSTEMİ ---
     function sendChat() {
         const input = document.getElementById('chat-msg');
         const txt = input.value.trim();
         if (!txt) return;
-        const data = { type: 'chat', text: txt, sender: peer.id.substring(0,4) };
-        broadcast(data);
-        logChat("Sen: " + txt);
+        broadcast({ type: 'chat', text: txt, sender: myShortId });
+        logChat(`Sen: ${txt}`, 'me');
         input.value = '';
     }
 
-    async function sendFile() {
-        const file = document.getElementById('file-input').files[0];
-        if (!file || !conns.length) return;
+    function logChat(msg, type) {
+        const box = document.getElementById('chat');
+        const div = document.createElement('div');
+        div.className = `chat-msg ${type}`;
+        div.innerText = msg;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+    }
 
-        broadcast({ type: 'start', name: file.name, size: file.size });
+    // --- DOSYA İŞLEMLERİ VE DRAG & DROP ---
+    function updateFileName() {
+        const file = document.getElementById('file-input').files[0];
+        document.getElementById('file-name-display').innerText = file ? file.name : "Sürükle bırak veya dosya seç";
+    }
+
+    const dropZone = document.getElementById('drop-zone');
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault(); dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+            document.getElementById('file-input').files = e.dataTransfer.files;
+            updateFileName();
+        }
+    });
+
+    // --- BACKPRESSURE KORUMALI ULTRA HIZLI GÖNDERİM MOTORU ---
+    async function startFileTransfer() {
+        const file = document.getElementById('file-input').files[0];
+        if (!file) return showToast("Önce bir dosya seçin!", "error");
+        if (!conns.length) return showToast("Bağlı cihaz yok!", "error");
+
         document.getElementById('p-bar-cont').style.display = 'block';
+        document.getElementById('stats-grid').style.display = 'grid';
+        document.getElementById('download-link').style.display = 'none';
+        
+        broadcast({ type: 'start', name: file.name, size: file.size });
+        logChat(`📤 Gönderiliyor: ${file.name}`, 'system');
 
         let offset = 0;
+        let startTime = Date.now();
+
         while (offset < file.size) {
+            // *** BEYİN YAKAN KISIM: AĞ TAMPON YÖNETİMİ (BACKPRESSURE) ***
+            // Ağın kilitlenmesini ve tarayıcının çökmesini engellemek için, giden verinin kanal 
+            // kapasitesini aşıp aşmadığını tüm bağlı cihazlar için eşzamanlı kontrol eder.
+            let bufferFull = true;
+            while (bufferFull) {
+                bufferFull = conns.some(c => c.dataChannel && c.dataChannel.bufferedAmount > 2 * 1024 * 1024); // 2MB Limit
+                if (bufferFull) await new Promise(r => setTimeout(r, 5)); // Kanallar boşalana kadar 5ms bekle
+            }
+
             const chunk = file.slice(offset, offset + CHUNK_SIZE);
             const buffer = await chunk.arrayBuffer();
             offset += buffer.byteLength;
+            
             const progress = (offset / file.size) * 100;
+            const elapsed = (Date.now() - startTime) / 1000;
+            const speed = (offset / 1024 / 1024) / (elapsed || 0.01);
+            const remaining = speed > 0 ? ((file.size - offset) / 1024 / 1024) / speed : 0;
 
             broadcast({ type: 'chunk', chunk: buffer, progress: progress });
+            
+            // UI Güncelleme (Performans için her frame'de bir değil)
             document.getElementById('p-fill').style.width = progress + "%";
-            await new Promise(r => setTimeout(r, 2)); // Donmayı önleme
+            document.getElementById('speed-val').innerText = speed.toFixed(1) + " MB/s";
+            document.getElementById('eta-val').innerText = Math.max(0, Math.round(remaining)) + "s";
         }
 
         broadcast({ type: 'end' });
-        logChat("Dosya Herkese Gönderildi: " + file.name);
+        showToast("Dosya gönderimi tamamlandı!");
+        logChat(`✅ Gönderim Başarılı: ${file.name}`, 'system');
     }
 
-    function logChat(msg) {
-        const box = document.getElementById('chat');
-        box.innerHTML += `<div>• ${msg}</div>`;
-        box.scrollTop = box.scrollHeight;
+    // --- TOAST BİLDİRİM SİSTEMİ (Alert Yerine) ---
+    function showToast(msg, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerText = msg;
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'fadeOut 0.3s forwards';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
     }
+    
+    // Enter tuşu ile mesaj gönderme
+    document.getElementById('chat-msg').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') sendChat();
+    });
 </script>
 </body>
 </html>
