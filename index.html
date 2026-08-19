@@ -10,102 +10,89 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
         
         :root { 
-            --p: #00e5ff; 
-            --p-glow: rgba(0, 229, 255, 0.4);
-            --bg: #050508; 
-            --card-bg: rgba(15, 17, 26, 0.6); 
-            --border: rgba(255, 255, 255, 0.1); 
-            --text: #f8f9fa; 
-            --success: #00ff88;
+            --p: #00e5ff; --p-glow: rgba(0, 229, 255, 0.4); --bg: #050508; 
+            --card-bg: rgba(15, 17, 26, 0.6); --border: rgba(255, 255, 255, 0.1); 
+            --text: #f8f9fa; --success: #00ff88; --error: #ff3366;
         }
 
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; transition: all 0.3s ease; }
         
         body { 
-            background: var(--bg); 
-            background-image: radial-gradient(circle at 50% 0%, #1a1c29 0%, transparent 70%);
-            color: var(--text); 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            min-height: 100vh; margin: 0; padding: 20px; overflow-x: hidden;
+            background: var(--bg); background-image: radial-gradient(circle at 50% 0%, #1a1c29 0%, transparent 70%);
+            color: var(--text); display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            min-height: 100vh; margin: 0; padding: 15px; overflow-x: hidden;
         }
 
-        /* Glassmorphism Card */
         .card { 
-            background: var(--card-bg); 
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            background: var(--card-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border); padding: 30px; border-radius: 24px; 
             width: 100%; max-width: 480px; text-align: center; 
             box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1); 
-            position: relative; z-index: 10;
         }
 
         h1 { color: var(--p); margin: 0 0 5px; font-size: 28px; font-weight: 900; letter-spacing: -1px; text-shadow: 0 0 20px var(--p-glow); }
         .tagline { font-size: 12px; color: #8ba0b2; margin-bottom: 25px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; }
 
-        /* Navigation */
         .nav-tabs { display: flex; background: rgba(0,0,0,0.4); padding: 5px; border-radius: 14px; gap: 5px; margin-bottom: 20px; border: 1px solid var(--border); }
         .nav-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #6c7a89; font-weight: 800; cursor: pointer; border-radius: 10px; font-size: 13px; }
         .nav-btn.active { background: rgba(255,255,255,0.05); color: var(--p); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
 
-        /* Inputs & Buttons */
-        .input-group { position: relative; margin-bottom: 15px; }
         input[type="text"] { 
             width: 100%; padding: 15px; background: rgba(0,0,0,0.5); 
             border: 1px solid var(--border); border-radius: 12px; color: #fff; 
-            text-align: center; font-size: 18px; font-weight: 800; letter-spacing: 4px; outline: none;
+            text-align: center; font-size: 18px; font-weight: 800; letter-spacing: 4px; outline: none; margin-bottom: 15px;
         }
         input[type="text"]:focus { border-color: var(--p); box-shadow: 0 0 15px var(--p-glow); }
-        input::placeholder { color: #4a5568; letter-spacing: 1px; font-weight: 600; font-size: 14px; }
 
         .btn { 
             background: linear-gradient(135deg, var(--p), #00b4d8); color: #000; border: none; 
             padding: 14px 20px; border-radius: 12px; font-weight: 900; cursor: pointer; 
-            width: 100%; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; 
-            box-shadow: 0 10px 20px var(--p-glow); 
+            width: 100%; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 10px 20px var(--p-glow); 
         }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 15px 25px var(--p-glow); }
-        .btn:active { transform: translateY(1px); }
 
-        /* QR & ID Display */
         #qrcode { background: #fff; padding: 10px; border-radius: 16px; display: inline-block; margin: 10px 0; }
         .id-badge { 
             background: rgba(0, 229, 255, 0.05); border: 1px dashed var(--p); padding: 15px; 
             border-radius: 12px; margin: 15px 0; font-size: 24px; color: var(--p); 
             font-weight: 900; letter-spacing: 6px; cursor: pointer; position: relative;
         }
-        .id-badge:hover { background: rgba(0, 229, 255, 0.1); }
-        .id-badge::after { content: 'KOPYALAMAK İÇİN TIKLA'; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #8ba0b2; letter-spacing: 1px; opacity: 0; }
-        .id-badge:hover::after { opacity: 1; bottom: -15px; }
 
-        /* Transfer Area */
-        #chat { height: 120px; overflow-y: auto; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 12px; padding: 12px; font-size: 13px; text-align: left; margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; }
+        /* Yeni Eklenen: Kullanıcı Listesi */
+        .user-list-container {
+            background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 12px;
+            padding: 10px; margin-bottom: 15px; text-align: left;
+        }
+        .user-list-title { font-size: 11px; color: #8ba0b2; font-weight: 800; margin-bottom: 8px; text-transform: uppercase; }
+        .user-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+        .user-tag { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 20px; font-size: 11px; color: #fff; font-weight: 600; }
+        .user-tag.me { border-color: var(--p); color: var(--p); }
+        .user-tag.host { border-color: #f39c12; color: #f39c12; }
+
+        #chat { height: 110px; overflow-y: auto; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 12px; padding: 12px; font-size: 13px; text-align: left; margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; }
         .chat-msg { background: rgba(255,255,255,0.03); padding: 8px 12px; border-radius: 8px; border-left: 2px solid #4a5568; word-break: break-all; }
         .chat-msg.me { border-left-color: var(--p); }
         .chat-msg.system { border-left: none; color: #8ba0b2; font-style: italic; font-size: 11px; text-align: center; }
 
         .drop-zone { border: 2px dashed var(--border); border-radius: 16px; padding: 25px 15px; cursor: pointer; margin-bottom: 15px; background: rgba(0,0,0,0.2); }
-        .drop-zone:hover, .drop-zone.dragover { border-color: var(--p); background: rgba(0, 229, 255, 0.05); }
+        .drop-zone:hover { border-color: var(--p); background: rgba(0, 229, 255, 0.05); }
 
-        /* Analytics & Progress */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; display: none; }
         .stat-box { background: rgba(0,0,0,0.4); padding: 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 11px; color: #8ba0b2; font-weight: 800; }
         .stat-val { display: block; color: var(--p); font-size: 18px; margin-top: 5px; }
 
         .progress-bar { height: 8px; background: rgba(0,0,0,0.5); border-radius: 4px; overflow: hidden; margin: 15px 0; display: none; border: 1px solid var(--border); }
-        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--p), #00ff88); box-shadow: 0 0 10px var(--p); transition: width 0.1s linear; }
+        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--p), #00ff88); box-shadow: 0 0 10px var(--p); }
 
-        #download-link { display: none; background: rgba(0, 255, 136, 0.1); color: var(--success); border: 1px solid var(--success); padding: 15px; border-radius: 12px; text-decoration: none; font-weight: 900; margin-top: 15px; text-transform: uppercase; letter-spacing: 1px; }
-        #download-link:hover { background: rgba(0, 255, 136, 0.2); box-shadow: 0 0 20px rgba(0, 255, 136, 0.3); }
-
-        /* Custom Toast Notification */
+        #download-link { display: none; background: rgba(0, 255, 136, 0.1); color: var(--success); border: 1px solid var(--success); padding: 15px; border-radius: 12px; text-decoration: none; font-weight: 900; margin-top: 15px; text-transform: uppercase; }
+        
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-        .toast { background: rgba(15, 17, 26, 0.9); backdrop-filter: blur(10px); border-left: 4px solid var(--p); color: #fff; padding: 15px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateX(120%); animation: slideIn 0.3s forwards; }
-        .toast.error { border-left-color: #ff3366; }
+        .toast { background: rgba(15, 17, 26, 0.95); backdrop-filter: blur(10px); border-left: 4px solid var(--p); color: #fff; padding: 15px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateX(120%); animation: slideIn 0.3s forwards; }
+        .toast.error { border-left-color: var(--error); }
+        .toast.info { border-left-color: #f39c12; }
         @keyframes slideIn { to { transform: translateX(0); } }
-        @keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
-
-        .footer { font-size: 12px; color: #4a5568; margin-top: 25px; font-weight: 600; letter-spacing: 1px; }
-        .footer b { color: #8ba0b2; }
+        
+        .footer { font-size: 12px; color: #4a5568; margin-top: 25px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -117,31 +104,36 @@
     <div class="tagline">Ultra-Speed P2P Network</div>
 
     <div class="nav-tabs" id="main-nav">
-        <button class="nav-btn active" onclick="setMode('single')">BİREYSEL BAĞLANTI</button>
-        <button class="nav-btn" onclick="setMode('room')">GRUP ODASI KUR</button>
+        <button class="nav-btn active" onclick="setMode('single')">BİREYSEL BAĞLAN</button>
+        <button class="nav-btn" onclick="setMode('room')">GRUP ODASI</button>
     </div>
 
     <!-- Bireysel Mod -->
     <div id="single-panel">
         <div id="qrcode"></div>
         <div class="id-badge" id="my-id" onclick="copyMyId()">...</div>
-        <div class="input-group">
-            <input type="text" id="target-id" placeholder="BAĞLANTI KODU" maxlength="6" autocomplete="off">
-        </div>
-        <button class="btn" onclick="connectSingle()">CİHAZA BAĞLAN</button>
+        <input type="text" id="target-id" placeholder="CİHAZ KODU GİRİN" maxlength="6" autocomplete="off">
+        <button class="btn" id="btn-single" onclick="connectSingle()">BAĞLAN</button>
     </div>
 
     <!-- Grup Odası Modu -->
     <div id="room-panel" style="display:none;">
         <button class="btn" onclick="createRoom()" style="margin-bottom: 20px;">YENİ ODA KUR</button>
-        <div class="input-group">
-            <input type="text" id="room-code-input" placeholder="ODA KODUNU GİRİN" maxlength="6" autocomplete="off">
-        </div>
-        <button class="btn" style="background: linear-gradient(135deg, #4facfe, #00f2fe);" onclick="joinRoom()">ODAYA KATIL</button>
+        <input type="text" id="room-code-input" placeholder="ODA KODUNU GİRİN" maxlength="6" autocomplete="off">
+        <button class="btn" id="btn-room" style="background: linear-gradient(135deg, #4facfe, #00f2fe);" onclick="joinRoom()">ODAYA KATIL</button>
     </div>
 
     <!-- Transfer Alanı -->
     <div id="transfer-panel" style="display:none;">
+        
+        <!-- Canlı Kullanıcı Listesi Alanı -->
+        <div class="user-list-container">
+            <div class="user-list-title">👥 ODADAKİ CİHAZLAR (<span id="user-count">1</span>)</div>
+            <div class="user-tags" id="user-tags-container">
+                <span class="user-tag me">Sen (Kurucu)</span>
+            </div>
+        </div>
+
         <div id="chat"></div>
         <div style="display:flex; gap:10px; margin-bottom: 15px;">
             <input type="text" id="chat-msg" placeholder="Mesaj yaz..." style="margin:0; font-size:14px; letter-spacing:0; text-align: left; padding: 12px;">
@@ -154,7 +146,7 @@
         </div>
         <input type="file" id="file-input" style="display: none;" onchange="updateFileName()">
         
-        <button class="btn" id="send-file-btn" onclick="startFileTransfer()">VERİYİ AKTAR</button>
+        <button class="btn" onclick="startFileTransfer()">DOSYAYI AKTAR</button>
         
         <div class="stats-grid" id="stats-grid">
             <div class="stat-box">HIZ <span class="stat-val" id="speed-val">0.0 MB/s</span></div>
@@ -164,44 +156,57 @@
         <div class="progress-bar" id="p-bar-cont"><div class="progress-fill" id="p-fill"></div></div>
     </div>
 
-    <a id="download-link">📥 BAĞLANTIYI KAYDET</a>
+    <a id="download-link">📥 DOSYAYI KAYDET</a>
 </div>
 
 <div class="footer">© 2026 <b>Bordex Technologies</b></div>
 
 <script>
-    // 1. Gelişmiş Kimlik ve Peer Üretimi (6 Haneli Sabit)
-    const myShortId = Math.floor(100000 + Math.random() * 900000).toString();
-    const peer = new Peer(myShortId, { config: {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]} });
+    // Çakışmaları önlemek için özel prefix ve güçlü STUN ayarları
+    const rawCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const myShortId = "bsd-" + rawCode; 
+    
+    const peer = new Peer(myShortId, {
+        config: {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:global.stun.twilio.com:3478' }
+            ]
+        }
+    });
     
     let conns = [];
     let isHost = false;
     let mode = 'single';
-    
-    // Ağın kitlenmemesi için Ultra Hızlı 256KB chunk boyutu (Yerel Ağda Şimşek Etkisi)
+    let roomHostId = null;
+    let connectedUsersList = []; // Cihaz kodlarını tutar
     const CHUNK_SIZE = 256 * 1024; 
 
-    // --- TEMEL BAŞLATMA ---
     peer.on('open', id => {
-        document.getElementById('my-id').innerText = id;
+        document.getElementById('my-id').innerText = rawCode;
         new QRCode(document.getElementById("qrcode"), { 
-            text: location.origin + location.pathname + '?id=' + id, 
+            text: location.origin + location.pathname + '?id=' + rawCode, 
             width: 140, height: 140, colorDark: "#000", colorLight: "#fff"
         });
         
         const autoConnect = new URLSearchParams(location.search).get('id');
-        if (autoConnect) { 
-            document.getElementById('target-id').value = autoConnect; 
-            connectSingle(); 
+        if (autoConnect) { document.getElementById('target-id').value = autoConnect; connectSingle(); }
+    });
+
+    // BAĞLANTI HATALARI YAKALAYICI (Burası Sayesinde Olmayan Odaya Girilmez)
+    peer.on('error', err => {
+        if(err.type === 'peer-unavailable') {
+            showToast("Böyle bir cihaz/oda kodu bulunamadı!", "error");
+            document.getElementById('btn-single').innerText = "BAĞLAN";
+            document.getElementById('btn-room').innerText = "ODAYA KATIL";
+        } else {
+            showToast("Ağ Hatası: " + err.type, "error");
         }
     });
 
-    peer.on('error', err => showToast(err.type === 'peer-unavailable' ? "Cihaz bulunamadı!" : "Ağ hatası oluştu.", "error"));
-
-    // Gelen Bağlantıları Dinleme
+    // Biri sana bağlandığında tetiklenir
     peer.on('connection', c => setupConnection(c));
 
-    // --- UI ve Mod Yönetimi ---
     function setMode(m) {
         mode = m;
         document.querySelectorAll('.nav-btn').forEach((b, i) => b.classList.toggle('active', (i===0 && m==='single') || (i===1 && m==='room')));
@@ -209,71 +214,89 @@
         document.getElementById('room-panel').style.display = m === 'room' ? 'block' : 'none';
     }
 
-    function copyMyId() {
-        navigator.clipboard.writeText(myShortId);
-        showToast("Kod kopyalandı: " + myShortId);
-    }
+    function copyMyId() { navigator.clipboard.writeText(rawCode); showToast("Kod kopyalandı!"); }
 
-    // --- BAĞLANTI KURULUMU ---
     function connectSingle() {
         const tid = document.getElementById('target-id').value.trim();
-        if (tid.length === 6 && tid !== myShortId) setupConnection(peer.connect(tid, { reliable: true }));
-        else showToast("Geçerli bir cihaz kodu girin!", "error");
+        if (tid.length === 6 && tid !== rawCode) {
+            document.getElementById('btn-single').innerText = "Aranıyor...";
+            setupConnection(peer.connect("bsd-" + tid, { reliable: true }));
+        } else showToast("Hatalı kod!", "error");
     }
 
     function createRoom() {
         isHost = true;
+        roomHostId = rawCode;
+        connectedUsersList = [rawCode]; // Kendini listeye ekle
         openTransferUI();
-        logChat(`👑 Oda Kuruldu! Davet Kodu: ${myShortId}`, 'system');
-        showToast("Oda başarıyla oluşturuldu.");
+        renderUserTags();
+        logChat(`👑 Oda Kuruldu! Davet Kodunuz: ${rawCode}`, 'system');
+        showToast("Oda oluşturuldu!");
     }
 
     function joinRoom() {
         const code = document.getElementById('room-code-input').value.trim();
-        if (code.length === 6 && code !== myShortId) {
-            setupConnection(peer.connect(code, { reliable: true }));
-            openTransferUI();
-        } else showToast("Geçerli bir oda kodu girin!", "error");
+        if (code.length === 6 && code !== rawCode) {
+            document.getElementById('btn-room').innerText = "Bağlanılıyor...";
+            roomHostId = code;
+            setupConnection(peer.connect("bsd-" + code, { reliable: true }));
+        } else showToast("Hatalı kod!", "error");
     }
 
     function setupConnection(c) {
         c.on('open', () => {
             if (!conns.includes(c)) conns.push(c);
-            if(document.getElementById('transfer-panel').style.display === 'none') openTransferUI();
-            logChat(`⚡ Cihaz Bağlandı (ID: ${c.peer})`, 'system');
+            
+            // Eğer UI henüz açılmadıysa şimdi aç! (Artık doğrulandı)
+            if(document.getElementById('transfer-panel').style.display === 'none') {
+                openTransferUI();
+            }
+
+            const peerShort = c.peer.replace('bsd-', '');
+            logChat(`⚡ Cihaz Bağlandı: ${peerShort}`, 'system');
             showToast("Bağlantı Kuruldu!");
+
+            // Eğer Odayı kuran kişi sensen, yeni bağlanan kişiyi listeye ekle ve herkese listeyi yolla
+            if (isHost) {
+                if(!connectedUsersList.includes(peerShort)) connectedUsersList.push(peerShort);
+                renderUserTags();
+                broadcast({ type: 'sync_users', list: connectedUsersList, hostId: roomHostId });
+            }
         });
 
         let chunks = [], fileMeta = null, bytesReceived = 0, lastTime = Date.now();
         
         c.on('data', data => {
-            // Host ise gelen veriyi diğerlerine relay (köprü) yap
-            if (isHost) broadcast(data, c);
+            // Eğer Host isem ve gelen veri sistem verisi değilse diğerlerine yönlendir
+            if (isHost && data.type !== 'sync_users') broadcast(data, c);
 
-            if (data.type === 'chat') logChat(`Cihaz-${data.sender}: ${data.text}`, 'peer');
+            // KULLANICI LİSTESİ SENKRONİZASYONU (İstemciler için)
+            if (data.type === 'sync_users') {
+                connectedUsersList = data.list;
+                roomHostId = data.hostId;
+                renderUserTags();
+            }
+
+            if (data.type === 'chat') logChat(`[${data.sender}]: ${data.text}`, 'peer');
             
             if (data.type === 'start') { 
                 chunks = []; fileMeta = data; bytesReceived = 0;
                 document.getElementById('p-bar-cont').style.display = 'block';
                 document.getElementById('stats-grid').style.display = 'grid';
                 document.getElementById('download-link').style.display = 'none';
-                logChat(`📥 Dosya alınıyor: ${fileMeta.name}`, 'system');
+                logChat(`📥 Alınıyor: ${fileMeta.name}`, 'system');
             }
             
             if (data.type === 'chunk') { 
-                chunks.push(data.chunk); 
-                bytesReceived += data.chunk.byteLength;
+                chunks.push(data.chunk); bytesReceived += data.chunk.byteLength;
                 
-                // Canlı Analitik Hesaplama
                 const now = Date.now();
                 const elapsed = (now - lastTime) / 1000;
                 if(elapsed > 0.5) {
-                    const speed = (bytesReceived / 1024 / 1024) / elapsed; // MB/s
-                    const remainingBytes = fileMeta.size - bytesReceived;
-                    const eta = speed > 0 ? (remainingBytes / 1024 / 1024) / speed : 0;
-                    
+                    const speed = (bytesReceived / 1024 / 1024) / elapsed; 
+                    const rem = speed > 0 ? ((fileMeta.size - bytesReceived) / 1024 / 1024) / speed : 0;
                     document.getElementById('speed-val').innerText = speed.toFixed(1) + " MB/s";
-                    document.getElementById('eta-val').innerText = Math.max(0, Math.round(eta)) + "s";
+                    document.getElementById('eta-val').innerText = Math.max(0, Math.round(rem)) + "s";
                 }
                 document.getElementById('p-fill').style.width = data.progress + "%";
             }
@@ -285,14 +308,44 @@
                 dl.download = fileMeta.name;
                 dl.style.display = 'block';
                 document.getElementById('p-fill').style.width = "100%";
-                logChat(`✅ Dosya Tamamlandı: ${fileMeta.name}`, 'system');
+                logChat(`✅ Dosya Alındı!`, 'system');
                 showToast("Dosya başarıyla alındı!");
             }
         });
 
         c.on('close', () => {
             conns = conns.filter(conn => conn !== c);
-            logChat(`❌ Cihaz Ayrıldı (ID: ${c.peer})`, 'system');
+            const peerShort = c.peer.replace('bsd-', '');
+            logChat(`❌ Cihaz Çıktı: ${peerShort}`, 'system');
+            
+            if(isHost) {
+                connectedUsersList = connectedUsersList.filter(u => u !== peerShort);
+                renderUserTags();
+                broadcast({ type: 'sync_users', list: connectedUsersList, hostId: roomHostId });
+            }
+        });
+    }
+
+    // KULLANICI LİSTESİNİ EKRANA ÇİZDİRME
+    function renderUserTags() {
+        document.getElementById('user-count').innerText = connectedUsersList.length;
+        const container = document.getElementById('user-tags-container');
+        container.innerHTML = ''; 
+
+        connectedUsersList.forEach(userCode => {
+            const span = document.createElement('span');
+            span.className = 'user-tag';
+            
+            if (userCode === rawCode) {
+                span.innerText = "Sen " + (isHost ? "(Kurucu)" : "");
+                span.classList.add('me');
+            } else if (userCode === roomHostId) {
+                span.innerText = userCode + " (Kurucu)";
+                span.classList.add('host');
+            } else {
+                span.innerText = "Cihaz-" + userCode;
+            }
+            container.appendChild(span);
         });
     }
 
@@ -307,66 +360,54 @@
         document.getElementById('transfer-panel').style.display = 'block';
     }
 
-    // --- SOHBET SİSTEMİ ---
     function sendChat() {
         const input = document.getElementById('chat-msg');
         const txt = input.value.trim();
         if (!txt) return;
-        broadcast({ type: 'chat', text: txt, sender: myShortId });
+        broadcast({ type: 'chat', text: txt, sender: rawCode });
         logChat(`Sen: ${txt}`, 'me');
         input.value = '';
     }
 
     function logChat(msg, type) {
         const box = document.getElementById('chat');
-        const div = document.createElement('div');
-        div.className = `chat-msg ${type}`;
-        div.innerText = msg;
-        box.appendChild(div);
+        box.innerHTML += `<div class="chat-msg ${type}">${msg}</div>`;
         box.scrollTop = box.scrollHeight;
     }
 
-    // --- DOSYA İŞLEMLERİ VE DRAG & DROP ---
     function updateFileName() {
         const file = document.getElementById('file-input').files[0];
         document.getElementById('file-name-display').innerText = file ? file.name : "Sürükle bırak veya dosya seç";
     }
 
     const dropZone = document.getElementById('drop-zone');
-    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); });
     dropZone.addEventListener('drop', e => {
-        e.preventDefault(); dropZone.classList.remove('dragover');
+        e.preventDefault(); 
         if (e.dataTransfer.files.length) {
             document.getElementById('file-input').files = e.dataTransfer.files;
             updateFileName();
         }
     });
 
-    // --- BACKPRESSURE KORUMALI ULTRA HIZLI GÖNDERİM MOTORU ---
     async function startFileTransfer() {
         const file = document.getElementById('file-input').files[0];
         if (!file) return showToast("Önce bir dosya seçin!", "error");
-        if (!conns.length) return showToast("Bağlı cihaz yok!", "error");
+        if (!conns.length) return showToast("Odada kimse yok!", "error");
 
         document.getElementById('p-bar-cont').style.display = 'block';
         document.getElementById('stats-grid').style.display = 'grid';
-        document.getElementById('download-link').style.display = 'none';
         
         broadcast({ type: 'start', name: file.name, size: file.size });
-        logChat(`📤 Gönderiliyor: ${file.name}`, 'system');
+        logChat(`📤 Gönderiliyor...`, 'system');
 
-        let offset = 0;
-        let startTime = Date.now();
+        let offset = 0, startTime = Date.now();
 
         while (offset < file.size) {
-            // *** BEYİN YAKAN KISIM: AĞ TAMPON YÖNETİMİ (BACKPRESSURE) ***
-            // Ağın kilitlenmesini ve tarayıcının çökmesini engellemek için, giden verinin kanal 
-            // kapasitesini aşıp aşmadığını tüm bağlı cihazlar için eşzamanlı kontrol eder.
             let bufferFull = true;
             while (bufferFull) {
-                bufferFull = conns.some(c => c.dataChannel && c.dataChannel.bufferedAmount > 2 * 1024 * 1024); // 2MB Limit
-                if (bufferFull) await new Promise(r => setTimeout(r, 5)); // Kanallar boşalana kadar 5ms bekle
+                bufferFull = conns.some(c => c.dataChannel && c.dataChannel.bufferedAmount > 2 * 1024 * 1024);
+                if (bufferFull) await new Promise(r => setTimeout(r, 5)); 
             }
 
             const chunk = file.slice(offset, offset + CHUNK_SIZE);
@@ -376,39 +417,27 @@
             const progress = (offset / file.size) * 100;
             const elapsed = (Date.now() - startTime) / 1000;
             const speed = (offset / 1024 / 1024) / (elapsed || 0.01);
-            const remaining = speed > 0 ? ((file.size - offset) / 1024 / 1024) / speed : 0;
-
+            
             broadcast({ type: 'chunk', chunk: buffer, progress: progress });
             
-            // UI Güncelleme (Performans için her frame'de bir değil)
             document.getElementById('p-fill').style.width = progress + "%";
             document.getElementById('speed-val').innerText = speed.toFixed(1) + " MB/s";
-            document.getElementById('eta-val').innerText = Math.max(0, Math.round(remaining)) + "s";
         }
 
         broadcast({ type: 'end' });
-        showToast("Dosya gönderimi tamamlandı!");
-        logChat(`✅ Gönderim Başarılı: ${file.name}`, 'system');
+        showToast("Gönderim tamamlandı!");
+        logChat(`✅ Gönderim Başarılı`, 'system');
     }
 
-    // --- TOAST BİLDİRİM SİSTEMİ (Alert Yerine) ---
     function showToast(msg, type = 'success') {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.innerText = msg;
+        toast.className = `toast ${type}`; toast.innerText = msg;
         container.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.style.animation = 'fadeOut 0.3s forwards';
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
+        setTimeout(() => { toast.style.animation = 'fadeOut 0.3s forwards'; setTimeout(() => toast.remove(), 300); }, 3000);
     }
     
-    // Enter tuşu ile mesaj gönderme
-    document.getElementById('chat-msg').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') sendChat();
-    });
+    document.getElementById('chat-msg').addEventListener('keypress', e => { if (e.key === 'Enter') sendChat(); });
 </script>
 </body>
 </html>
