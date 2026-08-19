@@ -3,122 +3,437 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BShareDrop | Pro Speed</title>
+    <title>BShareDrop | Bordex Technologies</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --primary: #00f2ff; --bg: #050505; --card-bg: #111; --text: #e0e0e0; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: var(--card-bg); padding: 25px; border-radius: 30px; width: 90%; max-width: 440px; text-align: center; border: 1px solid #222; }
-        h1 { font-size: 24px; color: var(--primary); margin-bottom: 5px; }
-        #qrcode { background: white; padding: 10px; border-radius: 15px; display: inline-block; margin: 15px 0; }
-        .btn { background: var(--primary); color: #000; border: none; padding: 12px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: 800; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; font-size: 12px; }
-        .stat-box { background: #1a1a1a; padding: 10px; border-radius: 10px; border: 1px solid #333; }
-        .stat-val { color: var(--primary); display: block; font-size: 16px; font-weight: bold; }
-        .progress-container { background: #333; height: 10px; border-radius: 5px; margin: 15px 0; overflow: hidden; display: none; }
-        .progress-bar { height: 100%; width: 0%; background: var(--primary); box-shadow: 0 0 10px var(--primary); transition: width 0.1s; }
-        #chat-area { height: 80px; overflow-y: auto; background: #000; border-radius: 10px; padding: 10px; margin-bottom: 10px; font-size: 12px; text-align: left; }
-        input[type="file"] { font-size: 12px; margin: 10px 0; }
+        :root {
+            --primary: #00f2ff;
+            --primary-hover: #00c8d2;
+            --bg: #08080c;
+            --card-bg: #12131c;
+            --card-border: #222538;
+            --text: #eceff4;
+            --text-muted: #8a91b4;
+            --accent-green: #00ff88;
+        }
+
+        * { box-sizing: border-box; transition: all 0.2s ease; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 460px;
+            text-align: center;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            margin-bottom: 20px; /* Footer için boşluk */
+        }
+
+        h1 {
+            font-size: 26px;
+            color: var(--primary);
+            margin: 0 0 5px 0;
+            letter-spacing: 1px;
+            font-weight: 900;
+        }
+
+        .tagline {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        /* Wi-Fi Hız Bilgilendirmesi */
+        .wifi-notice {
+            background: rgba(0, 242, 255, 0.1);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            color: #b3f9ff;
+            font-size: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+        
+        .wifi-notice span { font-weight: bold; color: var(--primary); }
+
+        /* Sekme Sistemi */
+        .tabs {
+            display: flex;
+            background: #0a0b12;
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid var(--card-border);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        .tab-btn.active {
+            background: var(--card-bg);
+            color: var(--primary);
+            border: 1px solid var(--card-border);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        #qrcode {
+            background: white;
+            padding: 12px;
+            border-radius: 16px;
+            display: inline-block;
+            margin: 10px 0;
+        }
+
+        .code-box {
+            background: #0a0b12;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px dashed var(--card-border);
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .code-val {
+            font-family: monospace;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary);
+            letter-spacing: 1px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background: #0a0b12;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 10px;
+            outline: none;
+            text-align: center;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .btn:hover { background: var(--primary-hover); }
+        .btn-sm { width: auto; padding: 6px 12px; font-size: 12px; }
+
+        /* Transfer & Chat Alanı */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+            font-size: 12px;
+        }
+
+        .stat-box {
+            background: #0a0b12;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+        }
+
+        .stat-val {
+            color: var(--primary);
+            display: block;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        .progress-container {
+            background: #0a0b12;
+            height: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+            display: none;
+            border: 1px solid var(--card-border);
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        #chat-area {
+            height: 100px;
+            overflow-y: auto;
+            background: #0a0b12;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 12px;
+            text-align: left;
+            border: 1px solid var(--card-border);
+        }
+
+        .chat-msg { margin-bottom: 6px; word-break: break-all; }
+        .chat-msg.me { color: var(--primary); }
+        .chat-msg.peer { color: #fff; }
+        .chat-input-wrapper { display: flex; gap: 8px; margin-bottom: 15px; }
+
+        /* Drag and Drop Zone */
+        .drop-zone {
+            border: 2px dashed var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 10px 0;
+            cursor: pointer;
+            background: #0a0b12;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--primary);
+            background: rgba(0, 242, 255, 0.05);
+        }
+
+        #download-link {
+            display: none;
+            margin-top: 15px;
+            color: var(--accent-green);
+            text-decoration: none;
+            font-weight: bold;
+            background: rgba(0, 255, 136, 0.1);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--accent-green);
+        }
+
+        .status-badge {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 15px;
+        }
+
+        .status-online { color: var(--accent-green); font-weight: bold; }
+
+        /* Footer (Şirket İsmi) */
+        .footer {
+            font-size: 11px;
+            color: #4a4e69;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+        .footer b { color: #6c7293; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h1>BSHAREDROP</h1>
-    
-    <div id="setup-area">
-        <div id="qrcode"></div>
-        <p style="font-size: 12px; color: #666;">BAĞLANMAK İÇİN TARAT</p>
+    <div class="tagline">Sınırsız & Doğrudan P2P Dosya Transferi</div>
+
+    <div class="wifi-notice">
+        ⚡ Cihazları <span>aynı Wi-Fi ağına</span> bağlayarak internet kotanızı harcamadan ultra yüksek hızda aktarım yapabilirsiniz.
     </div>
 
+    <!-- Bağlantı Kurma Alanı -->
+    <div id="setup-area">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('qr-tab')">QR Kod</button>
+            <button class="tab-btn" onclick="switchTab('code-tab')">Kod İle Bağlan</button>
+        </div>
+
+        <div id="qr-tab" class="tab-content active">
+            <div id="qrcode"></div>
+            <div class="code-box">
+                <span class="code-val" id="my-id-display">...</span>
+                <button class="btn btn-sm" onclick="copyId()">Kopyala</button>
+            </div>
+            <p style="font-size: 11px; color: var(--text-muted);">Kamera ile taratın veya ID kodunu kopyalayın.</p>
+        </div>
+
+        <div id="code-tab" class="tab-content">
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Bağlanmak istediğiniz cihazın kodunu girin:</p>
+            <input type="text" id="target-id-input" placeholder="Örn: 8f9b2a1c...">
+            <button class="btn" onclick="connectByInput()">CİHAZA BAĞLAN</button>
+        </div>
+    </div>
+
+    <!-- Transfer ve Mesajlaşma Alanı -->
     <div id="transfer-area" style="display:none;">
         <div id="chat-area"></div>
+        <div class="chat-input-wrapper">
+            <input type="text" id="chat-input" placeholder="Mesaj yazın..." style="margin:0;">
+            <button class="btn btn-sm" id="send-msg-btn" onclick="sendChatMessage()">Gönder</button>
+        </div>
+
+        <div class="drop-zone" id="drop-zone">
+            <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Dosyayı buraya sürükleyin veya <b>seçin</b></p>
+            <input type="file" id="file-input" style="display: none;">
+        </div>
+        <p id="selected-file-name" style="font-size: 12px; color: var(--primary); margin: 5px 0;"></p>
+
+        <button class="btn" id="send-btn" style="margin-top: 5px;">DOSYAYI GÖNDER</button>
+
         <div class="stats-grid">
             <div class="stat-box">HIZ<span id="speed" class="stat-val">0 MB/s</span></div>
-            <div class="stat-box">KALAN<span id="remaining" class="stat-val">0s</span></div>
+            <div class="stat-box">KALAN SÜRE<span id="remaining" class="stat-val">0s</span></div>
         </div>
-        
-        <div class="progress-container" id="p-cont"><div class="progress-bar" id="p-bar"></div></div>
 
-        <input type="file" id="file-input">
-        <button class="btn" id="send-btn">DOSYAYI FIRLAT</button>
+        <div class="progress-container" id="p-cont">
+            <div class="progress-bar" id="p-bar"></div>
+        </div>
     </div>
 
-    <a id="download-link" style="display:none; margin-top:15px; color:#00ff88; text-decoration:none; font-weight:bold;">📥 DOSYAYI KAYDET</a>
-    <p id="status" style="font-size: 11px; color: #444; margin-top: 10px;">ID: <span id="my-id">...</span></p>
+    <a id="download-link">📥 DOSYAYI İNDİR</a>
+    <div class="status-badge">Durum: <span id="status-text">Bağlantı bekleniyor...</span></div>
+</div>
+
+<!-- Şirket Telif Hakkı -->
+<div class="footer">
+    © 2026 <b>Bordex Technologies</b>. Tüm Hakları Saklıdır.
 </div>
 
 <script>
-    const peer = new Peer({ config: {'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }]}});
+    const peer = new Peer({ config: { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] } });
     let conn;
-    const CHUNK_SIZE = 16384; // 16KB paketler (Hız için ideal)
+    const CHUNK_SIZE = 256 * 1024; // Hız için 256KB optimize paket boyutu
 
     peer.on('open', (id) => {
-        document.getElementById('my-id').innerText = id;
+        document.getElementById('my-id-display').innerText = id;
         const shareUrl = `${window.location.origin}${window.location.pathname}?id=${id}`;
-        new QRCode(document.getElementById("qrcode"), { text: shareUrl, width: 150, height: 150 });
+        new QRCode(document.getElementById("qrcode"), { text: shareUrl, width: 140, height: 140 });
+
         const targetId = new URLSearchParams(window.location.search).get('id');
         if (targetId) connect(targetId);
     });
 
-    peer.on('connection', (c) => { conn = c; setup(); });
-    function connect(id) { conn = peer.connect(id, { reliable: true }); setup(); }
+    peer.on('connection', (c) => {
+        conn = c;
+        setupConnection();
+    });
 
-    function setup() {
+    function connectByInput() {
+        const targetId = document.getElementById('target-id-input').value.trim();
+        if (targetId) connect(targetId);
+    }
+
+    function connect(id) {
+        document.getElementById('status-text').innerText = "Bağlanıyor...";
+        conn = peer.connect(id, { reliable: true });
+        setupConnection();
+    }
+
+    function setupConnection() {
         conn.on('open', () => {
             document.getElementById('setup-area').style.display = "none";
+            document.querySelector('.wifi-notice').style.display = "none"; // Bağlanınca uyarıyı gizle
             document.getElementById('transfer-area').style.display = "block";
+            document.getElementById('status-text').innerHTML = '<span class="status-online">Bağlandı</span>';
+            appendChatSystem("Güvenli P2P bağlantı kuruldu.");
         });
 
         let receivedChunks = [];
+        let incomingFileInfo = null;
+
         conn.on('data', (data) => {
-            if(data.type === 'file-start') {
-                receivedChunks = [];
-                document.getElementById('p-cont').style.display = "block";
+            if (data.type === 'chat') {
+                appendChatMessage(data.text, 'peer');
             }
-            if(data.type === 'file-chunk') {
+            if (data.type === 'file-start') {
+                receivedChunks = [];
+                incomingFileInfo = data;
+                document.getElementById('p-cont').style.display = "block";
+                document.getElementById('download-link').style.display = "none";
+            }
+            if (data.type === 'file-chunk') {
                 receivedChunks.push(data.chunk);
                 updateProgress(data.progress, data.speed, data.remaining);
             }
-            if(data.type === 'file-end') {
+            if (data.type === 'file-end') {
                 const blob = new Blob(receivedChunks);
                 const url = URL.createObjectURL(blob);
                 const dl = document.getElementById('download-link');
-                dl.href = url; dl.download = data.name; dl.style.display = "block";
+                dl.href = url;
+                dl.download = incomingFileInfo ? incomingFileInfo.name : 'dosya';
+                dl.style.display = "block";
                 document.getElementById('p-bar').style.width = "100%";
+                appendChatSystem(`Dosya alındı: ${incomingFileInfo ? incomingFileInfo.name : ''}`);
             }
+        });
+
+        conn.on('close', () => {
+            document.getElementById('status-text').innerText = "Bağlantı koptu.";
         });
     }
 
-    function updateProgress(percent, speed, remain) {
-        document.getElementById('p-bar').style.width = percent + "%";
-        document.getElementById('speed').innerText = speed.toFixed(2) + " MB/s";
-        document.getElementById('remaining').innerText = Math.round(remain) + "s";
-    }
-
+    /* Backpressure Korumalı Ultra Hızlı Gönderim Döngüsü */
     document.getElementById('send-btn').onclick = async () => {
-        const file = document.getElementById('file-input').files[0];
-        if(!file) return;
+        const fileInput = document.getElementById('file-input');
+        const file = fileInput.files[0];
+        if (!file || !conn) return;
 
         document.getElementById('p-cont').style.display = "block";
-        conn.send({ type: 'file-start' });
+        document.getElementById('download-link').style.display = "none";
+        conn.send({ type: 'file-start', name: file.name, size: file.size });
 
-        const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
         let offset = 0;
         let startTime = Date.now();
 
-        for (let i = 0; i < totalChunks; i++) {
+        while (offset < file.size) {
+            // Buffer dolduğunda ağı kilitlememek için mikro bekleme (Backpressure)
+            while (conn.dataChannel && conn.dataChannel.bufferedAmount > 512 * 1024) {
+                await new Promise(r => setTimeout(r, 5));
+            }
+
             const chunk = file.slice(offset, offset + CHUNK_SIZE);
             const buffer = await chunk.arrayBuffer();
-            
-            offset += CHUNK_SIZE;
+            offset += buffer.byteLength;
+
             const elapsed = (Date.now() - startTime) / 1000;
-            const bytesSent = Math.min(offset, file.size);
-            const speed = (bytesSent / 1024 / 1024) / elapsed; // MB/s
-            const remainingBytes = file.size - bytesSent;
-            const remainingTime = speed > 0 ? (remainingBytes / 1024 / 1024) / speed : 0;
-            const progress = (bytesSent / file.size) * 100;
+            const speed = (offset / 1024 / 1024) / (elapsed || 0.001);
+            const progress = (offset / file.size) * 100;
+            const remainingTime = speed > 0 ? ((file.size - offset) / 1024 / 1024) / speed : 0;
 
             conn.send({
                 type: 'file-chunk',
@@ -129,13 +444,85 @@
             });
 
             updateProgress(progress, speed, remainingTime);
-            
-            // Tarayıcıyı kasmamak için çok kısa ara ver (hız dengesi)
-            if (i % 20 === 0) await new Promise(r => setTimeout(r, 1));
         }
 
-        conn.send({ type: 'file-end', name: file.name });
+        conn.send({ type: 'file-end' });
+        appendChatSystem(`Dosya gönderildi: ${file.name}`);
     };
+
+    /* UI Fonksiyonları */
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        event.target.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+    }
+
+    function copyId() {
+        const id = document.getElementById('my-id-display').innerText;
+        navigator.clipboard.writeText(id);
+        alert("Bağlantı ID kopyalandı!");
+    }
+
+    function updateProgress(percent, speed, remain) {
+        document.getElementById('p-bar').style.width = percent + "%";
+        document.getElementById('speed').innerText = speed.toFixed(2) + " MB/s";
+        document.getElementById('remaining').innerText = Math.round(remain) + "s";
+    }
+
+    /* Chat Fonksiyonları */
+    function sendChatMessage() {
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        if (text && conn) {
+            conn.send({ type: 'chat', text: text });
+            appendChatMessage(text, 'me');
+            input.value = '';
+        }
+    }
+
+    function appendChatMessage(msg, type) {
+        const area = document.getElementById('chat-area');
+        const div = document.createElement('div');
+        div.className = `chat-msg ${type}`;
+        div.innerText = (type === 'me' ? 'Sen: ' : 'Karşı Taraf: ') + msg;
+        area.appendChild(div);
+        area.scrollTop = area.scrollHeight;
+    }
+
+    function appendChatSystem(msg) {
+        const area = document.getElementById('chat-area');
+        const div = document.createElement('div');
+        div.style.color = '#666';
+        div.style.fontStyle = 'italic';
+        div.className = 'chat-msg';
+        div.innerText = '• ' + msg;
+        area.appendChild(div);
+        area.scrollTop = area.scrollHeight;
+    }
+
+    /* Drag & Drop Sürükle Bırak İşlemleri */
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+
+    dropZone.onclick = () => fileInput.click();
+    fileInput.onchange = () => {
+        if (fileInput.files.length) {
+            document.getElementById('selected-file-name').innerText = fileInput.files[0].name;
+        }
+    };
+
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            document.getElementById('selected-file-name').innerText = fileInput.files[0].name;
+        }
+    });
 </script>
 </body>
 </html>
