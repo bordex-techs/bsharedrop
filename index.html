@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BShareDrop</title>
+    <title>BShareDrop | Bordex Technologies</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -58,7 +58,6 @@
             font-weight: 900; letter-spacing: 6px; cursor: pointer; position: relative;
         }
 
-        /* Yeni Eklenen: Kullanıcı Listesi */
         .user-list-container {
             background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 12px;
             padding: 10px; margin-bottom: 15px; text-align: left;
@@ -89,7 +88,6 @@
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
         .toast { background: rgba(15, 17, 26, 0.95); backdrop-filter: blur(10px); border-left: 4px solid var(--p); color: #fff; padding: 15px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateX(120%); animation: slideIn 0.3s forwards; }
         .toast.error { border-left-color: var(--error); }
-        .toast.info { border-left-color: #f39c12; }
         @keyframes slideIn { to { transform: translateX(0); } }
         
         .footer { font-size: 12px; color: #4a5568; margin-top: 25px; font-weight: 600; }
@@ -101,7 +99,7 @@
 
 <div class="card">
     <h1>BSHAREDROP</h1>
-    <div class="tagline">Ultra-Speed P2P Network</div>
+    <div class="tagline">P2P File Transfer</div>
 
     <div class="nav-tabs" id="main-nav">
         <button class="nav-btn active" onclick="setMode('single')">BİREYSEL BAĞLAN</button>
@@ -125,8 +123,6 @@
 
     <!-- Transfer Alanı -->
     <div id="transfer-panel" style="display:none;">
-        
-        <!-- Canlı Kullanıcı Listesi Alanı -->
         <div class="user-list-container">
             <div class="user-list-title">👥 ODADAKİ CİHAZLAR (<span id="user-count">1</span>)</div>
             <div class="user-tags" id="user-tags-container">
@@ -162,7 +158,6 @@
 <div class="footer">© 2026 <b>Bordex Technologies</b></div>
 
 <script>
-    // Çakışmaları önlemek için özel prefix ve güçlü STUN ayarları
     const rawCode = Math.floor(100000 + Math.random() * 900000).toString();
     const myShortId = "bsd-" + rawCode; 
     
@@ -179,7 +174,8 @@
     let isHost = false;
     let mode = 'single';
     let roomHostId = null;
-    let connectedUsersList = []; // Cihaz kodlarını tutar
+    let connectedUsersList = [];
+    let connectionTimeout = null;
     const CHUNK_SIZE = 256 * 1024; 
 
     peer.on('open', id => {
@@ -193,18 +189,16 @@
         if (autoConnect) { document.getElementById('target-id').value = autoConnect; connectSingle(); }
     });
 
-    // BAĞLANTI HATALARI YAKALAYICI (Burası Sayesinde Olmayan Odaya Girilmez)
     peer.on('error', err => {
+        clearTimeout(connectionTimeout);
+        resetButtons();
         if(err.type === 'peer-unavailable') {
-            showToast("Böyle bir cihaz/oda kodu bulunamadı!", "error");
-            document.getElementById('btn-single').innerText = "BAĞLAN";
-            document.getElementById('btn-room').innerText = "ODAYA KATIL";
+            showToast("Böyle bir cihaz veya oda bulunamadı!", "error");
         } else {
             showToast("Ağ Hatası: " + err.type, "error");
         }
     });
 
-    // Biri sana bağlandığında tetiklenir
     peer.on('connection', c => setupConnection(c));
 
     function setMode(m) {
@@ -216,18 +210,26 @@
 
     function copyMyId() { navigator.clipboard.writeText(rawCode); showToast("Kod kopyalandı!"); }
 
+    function resetButtons() {
+        document.getElementById('btn-single').innerText = "BAĞLAN";
+        document.getElementById('btn-room').innerText = "ODAYA KATIL";
+    }
+
     function connectSingle() {
         const tid = document.getElementById('target-id').value.trim();
         if (tid.length === 6 && tid !== rawCode) {
             document.getElementById('btn-single').innerText = "Aranıyor...";
             setupConnection(peer.connect("bsd-" + tid, { reliable: true }));
-        } else showToast("Hatalı kod!", "error");
+            startTimeoutCheck();
+        } else {
+            showToast("Hatalı kod!", "error");
+        }
     }
 
     function createRoom() {
         isHost = true;
         roomHostId = rawCode;
-        connectedUsersList = [rawCode]; // Kendini listeye ekle
+        connectedUsersList = [rawCode];
         openTransferUI();
         renderUserTags();
         logChat(`👑 Oda Kuruldu! Davet Kodunuz: ${rawCode}`, 'system');
@@ -240,14 +242,29 @@
             document.getElementById('btn-room').innerText = "Bağlanılıyor...";
             roomHostId = code;
             setupConnection(peer.connect("bsd-" + code, { reliable: true }));
-        } else showToast("Hatalı kod!", "error");
+            startTimeoutCheck();
+        } else {
+            showToast("Hatalı kod!", "error");
+        }
+    }
+
+    // Takılı kalmayı önleyen 6 saniyelik zaman aşımı koruması
+    function startTimeoutCheck() {
+        clearTimeout(connectionTimeout);
+        connectionTimeout = setTimeout(() => {
+            if (document.getElementById('transfer-panel').style.display === 'none') {
+                resetButtons();
+                showToast("Bağlantı zaman aşımına uğradı!", "error");
+            }
+        }, 6000);
     }
 
     function setupConnection(c) {
         c.on('open', () => {
+            clearTimeout(connectionTimeout);
+            resetButtons();
             if (!conns.includes(c)) conns.push(c);
             
-            // Eğer UI henüz açılmadıysa şimdi aç! (Artık doğrulandı)
             if(document.getElementById('transfer-panel').style.display === 'none') {
                 openTransferUI();
             }
@@ -256,7 +273,6 @@
             logChat(`⚡ Cihaz Bağlandı: ${peerShort}`, 'system');
             showToast("Bağlantı Kuruldu!");
 
-            // Eğer Odayı kuran kişi sensen, yeni bağlanan kişiyi listeye ekle ve herkese listeyi yolla
             if (isHost) {
                 if(!connectedUsersList.includes(peerShort)) connectedUsersList.push(peerShort);
                 renderUserTags();
@@ -267,10 +283,8 @@
         let chunks = [], fileMeta = null, bytesReceived = 0, lastTime = Date.now();
         
         c.on('data', data => {
-            // Eğer Host isem ve gelen veri sistem verisi değilse diğerlerine yönlendir
             if (isHost && data.type !== 'sync_users') broadcast(data, c);
 
-            // KULLANICI LİSTESİ SENKRONİZASYONU (İstemciler için)
             if (data.type === 'sync_users') {
                 connectedUsersList = data.list;
                 roomHostId = data.hostId;
@@ -326,7 +340,6 @@
         });
     }
 
-    // KULLANICI LİSTESİNİ EKRANA ÇİZDİRME
     function renderUserTags() {
         document.getElementById('user-count').innerText = connectedUsersList.length;
         const container = document.getElementById('user-tags-container');
