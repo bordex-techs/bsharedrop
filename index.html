@@ -7,522 +7,197 @@
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root {
-            --primary: #00f2ff;
-            --primary-hover: #00c8d2;
-            --bg: #08080c;
-            --card-bg: #12131c;
-            --card-border: #222538;
-            --text: #eceff4;
-            --text-muted: #8a91b4;
-            --accent-green: #00ff88;
-        }
-
-        * { box-sizing: border-box; transition: all 0.2s ease; }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 24px;
-            width: 100%;
-            max-width: 460px;
-            text-align: center;
-            border: 1px solid var(--card-border);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-            margin-bottom: 20px; /* Footer için boşluk */
-        }
-
-        h1 {
-            font-size: 26px;
-            color: var(--primary);
-            margin: 0 0 5px 0;
-            letter-spacing: 1px;
-            font-weight: 900;
-        }
-
-        .tagline {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 15px;
-        }
-
-        /* Wi-Fi Hız Bilgilendirmesi */
-        .wifi-notice {
-            background: rgba(0, 242, 255, 0.1);
-            border: 1px solid rgba(0, 242, 255, 0.3);
-            color: #b3f9ff;
-            font-size: 12px;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            line-height: 1.4;
-        }
-        
-        .wifi-notice span { font-weight: bold; color: var(--primary); }
-
-        /* Sekme Sistemi */
-        .tabs {
-            display: flex;
-            background: #0a0b12;
-            padding: 4px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border: 1px solid var(--card-border);
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 8px 12px;
-            border: none;
-            background: transparent;
-            color: var(--text-muted);
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            border-radius: 8px;
-        }
-
-        .tab-btn.active {
-            background: var(--card-bg);
-            color: var(--primary);
-            border: 1px solid var(--card-border);
-        }
-
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        #qrcode {
-            background: white;
-            padding: 12px;
-            border-radius: 16px;
-            display: inline-block;
-            margin: 10px 0;
-        }
-
-        .code-box {
-            background: #0a0b12;
-            padding: 12px;
-            border-radius: 12px;
-            border: 1px dashed var(--card-border);
-            margin: 15px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .code-val {
-            font-family: monospace;
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--primary);
-            letter-spacing: 1px;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            background: #0a0b12;
-            border: 1px solid var(--card-border);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 14px;
-            margin-bottom: 10px;
-            outline: none;
-            text-align: center;
-        }
-
-        input[type="text"]:focus {
-            border-color: var(--primary);
-        }
-
-        .btn {
-            background: var(--primary);
-            color: #000;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            width: 100%;
-            font-weight: 700;
-            font-size: 14px;
-        }
-
-        .btn:hover { background: var(--primary-hover); }
-        .btn-sm { width: auto; padding: 6px 12px; font-size: 12px; }
-
-        /* Transfer & Chat Alanı */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin: 15px 0;
-            font-size: 12px;
-        }
-
-        .stat-box {
-            background: #0a0b12;
-            padding: 10px;
-            border-radius: 10px;
-            border: 1px solid var(--card-border);
-        }
-
-        .stat-val {
-            color: var(--primary);
-            display: block;
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 4px;
-        }
-
-        .progress-container {
-            background: #0a0b12;
-            height: 10px;
-            border-radius: 5px;
-            margin: 15px 0;
-            overflow: hidden;
-            display: none;
-            border: 1px solid var(--card-border);
-        }
-
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: var(--primary);
-            box-shadow: 0 0 10px var(--primary);
-        }
-
-        #chat-area {
-            height: 100px;
-            overflow-y: auto;
-            background: #0a0b12;
-            border-radius: 10px;
-            padding: 10px;
-            margin-bottom: 10px;
-            font-size: 12px;
-            text-align: left;
-            border: 1px solid var(--card-border);
-        }
-
-        .chat-msg { margin-bottom: 6px; word-break: break-all; }
-        .chat-msg.me { color: var(--primary); }
-        .chat-msg.peer { color: #fff; }
-        .chat-input-wrapper { display: flex; gap: 8px; margin-bottom: 15px; }
-
-        /* Drag and Drop Zone */
-        .drop-zone {
-            border: 2px dashed var(--card-border);
-            border-radius: 12px;
-            padding: 20px;
-            margin: 10px 0;
-            cursor: pointer;
-            background: #0a0b12;
-        }
-
-        .drop-zone:hover, .drop-zone.dragover {
-            border-color: var(--primary);
-            background: rgba(0, 242, 255, 0.05);
-        }
-
-        #download-link {
-            display: none;
-            margin-top: 15px;
-            color: var(--accent-green);
-            text-decoration: none;
-            font-weight: bold;
-            background: rgba(0, 255, 136, 0.1);
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid var(--accent-green);
-        }
-
-        .status-badge {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 15px;
-        }
-
-        .status-online { color: var(--accent-green); font-weight: bold; }
-
-        /* Footer (Şirket İsmi) */
-        .footer {
-            font-size: 11px;
-            color: #4a4e69;
-            text-align: center;
-            letter-spacing: 0.5px;
-        }
-        .footer b { color: #6c7293; }
+        :root { --p: #00f2ff; --bg: #090a10; --card: #121420; --border: #22263d; --text: #eceff4; }
+        * { box-sizing: border-box; font-family: system-ui, sans-serif; }
+        body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 15px; }
+        .card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 20px; width: 100%; max-width: 420px; text-align: center; box-shadow: 0 10px 30px #0008; }
+        h1 { color: var(--p); margin: 0 0 10px; font-size: 22px; }
+        .nav-tabs { display: flex; background: #0005; padding: 4px; border-radius: 10px; gap: 4px; margin-bottom: 15px; }
+        .nav-btn { flex: 1; padding: 8px; border: none; background: transparent; color: #888; font-weight: bold; cursor: pointer; border-radius: 8px; }
+        .nav-btn.active { background: var(--border); color: var(--p); }
+        .btn { background: var(--p); color: #000; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; }
+        input[type="text"] { width: 100%; padding: 10px; background: #0004; border: 1px solid var(--border); border-radius: 8px; color: #fff; text-align: center; margin-bottom: 8px; }
+        #qrcode { background: #fff; padding: 8px; border-radius: 12px; display: inline-block; margin: 10px 0; }
+        #chat { height: 90px; overflow-y: auto; background: #0004; border: 1px solid var(--border); border-radius: 8px; padding: 8px; font-size: 12px; text-align: left; margin-bottom: 8px; }
+        .progress-bar { height: 6px; background: #222; border-radius: 3px; overflow: hidden; margin: 10px 0; display: none; }
+        .progress-fill { height: 100%; width: 0%; background: var(--p); transition: width 0.1s; }
+        #download-link { display: none; background: #00ff8822; color: #00ff88; border: 1px solid #00ff88; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 10px; }
+        .footer { font-size: 11px; color: #555; margin-top: 15px; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h1>BSHAREDROP</h1>
-    <div class="tagline">Sınırsız & Doğrudan P2P Dosya Transferi</div>
 
-    <div class="wifi-notice">
-        ⚡ Cihazları <span>aynı Wi-Fi ağına</span> bağlayarak internet kotanızı harcamadan ultra yüksek hızda aktarım yapabilirsiniz.
+    <!-- Üst Sayfa / Mod Seçimi -->
+    <div class="nav-tabs">
+        <button class="nav-btn active" onclick="setMode('single')">Bireysel</button>
+        <button class="nav-btn" onclick="setMode('room')">Grup Odası</button>
     </div>
 
-    <!-- Bağlantı Kurma Alanı -->
-    <div id="setup-area">
-        <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('qr-tab')">QR Kod</button>
-            <button class="tab-btn" onclick="switchTab('code-tab')">Kod İle Bağlan</button>
-        </div>
-
-        <div id="qr-tab" class="tab-content active">
-            <div id="qrcode"></div>
-            <div class="code-box">
-                <span class="code-val" id="my-id-display">...</span>
-                <button class="btn btn-sm" onclick="copyId()">Kopyala</button>
-            </div>
-            <p style="font-size: 11px; color: var(--text-muted);">Kamera ile taratın veya ID kodunu kopyalayın.</p>
-        </div>
-
-        <div id="code-tab" class="tab-content">
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Bağlanmak istediğiniz cihazın kodunu girin:</p>
-            <input type="text" id="target-id-input" placeholder="Örn: 8f9b2a1c...">
-            <button class="btn" onclick="connectByInput()">CİHAZA BAĞLAN</button>
-        </div>
+    <!-- Bireysel Mod -->
+    <div id="single-panel">
+        <div id="qrcode"></div>
+        <p style="font-size: 11px; color: #aaa; margin: 0;">ID Kodu: <b id="my-id" style="color:var(--p)">...</b></p>
+        <input type="text" id="target-id" placeholder="Cihaz ID Girin" style="margin-top:10px;">
+        <button class="btn" onclick="connectSingle()">Bağlan</button>
     </div>
 
-    <!-- Transfer ve Mesajlaşma Alanı -->
-    <div id="transfer-area" style="display:none;">
-        <div id="chat-area"></div>
-        <div class="chat-input-wrapper">
-            <input type="text" id="chat-input" placeholder="Mesaj yazın..." style="margin:0;">
-            <button class="btn btn-sm" id="send-msg-btn" onclick="sendChatMessage()">Gönder</button>
-        </div>
-
-        <div class="drop-zone" id="drop-zone">
-            <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Dosyayı buraya sürükleyin veya <b>seçin</b></p>
-            <input type="file" id="file-input" style="display: none;">
-        </div>
-        <p id="selected-file-name" style="font-size: 12px; color: var(--primary); margin: 5px 0;"></p>
-
-        <button class="btn" id="send-btn" style="margin-top: 5px;">DOSYAYI GÖNDER</button>
-
-        <div class="stats-grid">
-            <div class="stat-box">HIZ<span id="speed" class="stat-val">0 MB/s</span></div>
-            <div class="stat-box">KALAN SÜRE<span id="remaining" class="stat-val">0s</span></div>
-        </div>
-
-        <div class="progress-container" id="p-cont">
-            <div class="progress-bar" id="p-bar"></div>
-        </div>
+    <!-- Grup Odası Modu -->
+    <div id="room-panel" style="display:none;">
+        <button class="btn" onclick="createRoom()">Oda Kur</button>
+        <p style="font-size:12px; color:#888; margin:8px 0;">veya</p>
+        <input type="text" id="room-code-input" placeholder="Oda Kodunu Girin">
+        <button class="btn" onclick="joinRoom()">Odaya Katıl</button>
     </div>
 
-    <a id="download-link">📥 DOSYAYI İNDİR</a>
-    <div class="status-badge">Durum: <span id="status-text">Bağlantı bekleniyor...</span></div>
+    <!-- Transfer & Chat Alanı (Ortak) -->
+    <div id="transfer-panel" style="display:none;">
+        <p id="room-status" style="font-size:12px; color:var(--p); font-weight:bold;"></p>
+        <div id="chat"></div>
+        <div style="display:flex; gap:5px;">
+            <input type="text" id="chat-msg" placeholder="Mesaj yaz..." style="margin:0;">
+            <button class="btn" style="width:auto; margin:0;" onclick="sendChat()">Gönder</button>
+        </div>
+        
+        <input type="file" id="file-input" style="margin-top:10px; font-size:12px;">
+        <button class="btn" id="send-file-btn" onclick="sendFile()">Dosyayı Odadakilere Gönder</button>
+        
+        <div class="progress-bar" id="p-bar-cont"><div class="progress-fill" id="p-fill"></div></div>
+        <p style="font-size:11px; color:#aaa;" id="speed-text"></p>
+    </div>
+
+    <a id="download-link">📥 Dosyayı İndir</a>
 </div>
 
-<!-- Şirket Telif Hakkı -->
-<div class="footer">
-    © 2026 <b>Bordex Technologies</b>. Tüm Hakları Saklıdır.
-</div>
+<div class="footer">© 2026 <b>Bordex Technologies</b></div>
 
 <script>
-    const peer = new Peer({ config: { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] } });
-    let conn;
-    const CHUNK_SIZE = 256 * 1024; // Hız için 256KB optimize paket boyutu
+    const peer = new Peer();
+    let conns = []; // Tüm aktif bağlantılar
+    let isHost = false;
+    let mode = 'single';
+    const CHUNK_SIZE = 64 * 1024;
 
-    peer.on('open', (id) => {
-        document.getElementById('my-id-display').innerText = id;
-        const shareUrl = `${window.location.origin}${window.location.pathname}?id=${id}`;
-        new QRCode(document.getElementById("qrcode"), { text: shareUrl, width: 140, height: 140 });
-
-        const targetId = new URLSearchParams(window.location.search).get('id');
-        if (targetId) connect(targetId);
+    peer.on('open', id => {
+        document.getElementById('my-id').innerText = id;
+        new QRCode(document.getElementById("qrcode"), { text: location.href + '?id=' + id, width: 120, height: 120 });
+        const autoConnect = new URLSearchParams(location.search).get('id');
+        if (autoConnect) { document.getElementById('target-id').value = autoConnect; connectSingle(); }
     });
 
-    peer.on('connection', (c) => {
-        conn = c;
-        setupConnection();
+    peer.on('connection', c => {
+        setupConnection(c);
     });
 
-    function connectByInput() {
-        const targetId = document.getElementById('target-id-input').value.trim();
-        if (targetId) connect(targetId);
+    function setMode(m) {
+        mode = m;
+        document.querySelectorAll('.nav-btn').forEach((b, i) => b.classList.toggle('active', (i===0 && m==='single') || (i===1 && m==='room')));
+        document.getElementById('single-panel').style.display = m === 'single' ? 'block' : 'none';
+        document.getElementById('room-panel').style.display = m === 'room' ? 'block' : 'none';
     }
 
-    function connect(id) {
-        document.getElementById('status-text').innerText = "Bağlanıyor...";
-        conn = peer.connect(id, { reliable: true });
-        setupConnection();
+    function connectSingle() {
+        const tid = document.getElementById('target-id').value.trim();
+        if (tid) setupConnection(peer.connect(tid));
     }
 
-    function setupConnection() {
-        conn.on('open', () => {
-            document.getElementById('setup-area').style.display = "none";
-            document.querySelector('.wifi-notice').style.display = "none"; // Bağlanınca uyarıyı gizle
-            document.getElementById('transfer-area').style.display = "block";
-            document.getElementById('status-text').innerHTML = '<span class="status-online">Bağlandı</span>';
-            appendChatSystem("Güvenli P2P bağlantı kuruldu.");
+    function createRoom() {
+        isHost = true;
+        openTransferUI("Oda Kuruldu! Oda Kodu: " + peer.id);
+    }
+
+    function joinRoom() {
+        const code = document.getElementById('room-code-input').value.trim();
+        if (code) {
+            setupConnection(peer.connect(code));
+            openTransferUI("Odaya Katılındı");
+        }
+    }
+
+    function setupConnection(c) {
+        c.on('open', () => {
+            if (!conns.includes(c)) conns.push(c);
+            openTransferUI(mode === 'single' ? "Bağlantı Başarılı" : `Oda Aktif (${conns.length} Kişi)`);
+            logChat("Sisteme bir cihaz bağlandı.");
         });
 
-        let receivedChunks = [];
-        let incomingFileInfo = null;
+        let chunks = [], fileMeta = null;
+        c.on('data', data => {
+            // Oda kurucusu ise gelen veriyi diğer üyelere dağıtır (Relay)
+            if (isHost) broadcast(data, c);
 
-        conn.on('data', (data) => {
-            if (data.type === 'chat') {
-                appendChatMessage(data.text, 'peer');
-            }
-            if (data.type === 'file-start') {
-                receivedChunks = [];
-                incomingFileInfo = data;
-                document.getElementById('p-cont').style.display = "block";
-                document.getElementById('download-link').style.display = "none";
-            }
-            if (data.type === 'file-chunk') {
-                receivedChunks.push(data.chunk);
-                updateProgress(data.progress, data.speed, data.remaining);
-            }
-            if (data.type === 'file-end') {
-                const blob = new Blob(receivedChunks);
-                const url = URL.createObjectURL(blob);
+            if (data.type === 'chat') logChat(data.sender + ": " + data.text);
+            if (data.type === 'start') { chunks = []; fileMeta = data; document.getElementById('p-bar-cont').style.display = 'block'; }
+            if (data.type === 'chunk') { chunks.push(data.chunk); document.getElementById('p-fill').style.width = data.progress + "%"; }
+            if (data.type === 'end') {
+                const blob = new Blob(chunks);
                 const dl = document.getElementById('download-link');
-                dl.href = url;
-                dl.download = incomingFileInfo ? incomingFileInfo.name : 'dosya';
-                dl.style.display = "block";
-                document.getElementById('p-bar').style.width = "100%";
-                appendChatSystem(`Dosya alındı: ${incomingFileInfo ? incomingFileInfo.name : ''}`);
+                dl.href = URL.createObjectURL(blob);
+                dl.download = fileMeta.name;
+                dl.style.display = 'block';
+                logChat("Dosya alındı: " + fileMeta.name);
             }
         });
 
-        conn.on('close', () => {
-            document.getElementById('status-text').innerText = "Bağlantı koptu.";
+        c.on('close', () => {
+            conns = conns.filter(conn => conn !== c);
+            logChat("Bir cihaz ayrıldı.");
         });
     }
 
-    /* Backpressure Korumalı Ultra Hızlı Gönderim Döngüsü */
-    document.getElementById('send-btn').onclick = async () => {
-        const fileInput = document.getElementById('file-input');
-        const file = fileInput.files[0];
-        if (!file || !conn) return;
+    function broadcast(data, excludeConn = null) {
+        conns.forEach(c => {
+            if (c !== excludeConn && c.open) c.send(data);
+        });
+    }
 
-        document.getElementById('p-cont').style.display = "block";
-        document.getElementById('download-link').style.display = "none";
-        conn.send({ type: 'file-start', name: file.name, size: file.size });
+    function openTransferUI(status) {
+        document.getElementById('single-panel').style.display = 'none';
+        document.getElementById('room-panel').style.display = 'none';
+        document.getElementById('transfer-panel').style.display = 'block';
+        document.getElementById('room-status').innerText = status;
+    }
+
+    function sendChat() {
+        const input = document.getElementById('chat-msg');
+        const txt = input.value.trim();
+        if (!txt) return;
+        const data = { type: 'chat', text: txt, sender: peer.id.substring(0,4) };
+        broadcast(data);
+        logChat("Sen: " + txt);
+        input.value = '';
+    }
+
+    async function sendFile() {
+        const file = document.getElementById('file-input').files[0];
+        if (!file || !conns.length) return;
+
+        broadcast({ type: 'start', name: file.name, size: file.size });
+        document.getElementById('p-bar-cont').style.display = 'block';
 
         let offset = 0;
-        let startTime = Date.now();
-
         while (offset < file.size) {
-            // Buffer dolduğunda ağı kilitlememek için mikro bekleme (Backpressure)
-            while (conn.dataChannel && conn.dataChannel.bufferedAmount > 512 * 1024) {
-                await new Promise(r => setTimeout(r, 5));
-            }
-
             const chunk = file.slice(offset, offset + CHUNK_SIZE);
             const buffer = await chunk.arrayBuffer();
             offset += buffer.byteLength;
-
-            const elapsed = (Date.now() - startTime) / 1000;
-            const speed = (offset / 1024 / 1024) / (elapsed || 0.001);
             const progress = (offset / file.size) * 100;
-            const remainingTime = speed > 0 ? ((file.size - offset) / 1024 / 1024) / speed : 0;
 
-            conn.send({
-                type: 'file-chunk',
-                chunk: buffer,
-                progress: progress,
-                speed: speed,
-                remaining: remainingTime
-            });
-
-            updateProgress(progress, speed, remainingTime);
+            broadcast({ type: 'chunk', chunk: buffer, progress: progress });
+            document.getElementById('p-fill').style.width = progress + "%";
+            await new Promise(r => setTimeout(r, 2)); // Donmayı önleme
         }
 
-        conn.send({ type: 'file-end' });
-        appendChatSystem(`Dosya gönderildi: ${file.name}`);
-    };
-
-    /* UI Fonksiyonları */
-    function switchTab(tabId) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        
-        event.target.classList.add('active');
-        document.getElementById(tabId).classList.add('active');
+        broadcast({ type: 'end' });
+        logChat("Dosya Herkese Gönderildi: " + file.name);
     }
 
-    function copyId() {
-        const id = document.getElementById('my-id-display').innerText;
-        navigator.clipboard.writeText(id);
-        alert("Bağlantı ID kopyalandı!");
+    function logChat(msg) {
+        const box = document.getElementById('chat');
+        box.innerHTML += `<div>• ${msg}</div>`;
+        box.scrollTop = box.scrollHeight;
     }
-
-    function updateProgress(percent, speed, remain) {
-        document.getElementById('p-bar').style.width = percent + "%";
-        document.getElementById('speed').innerText = speed.toFixed(2) + " MB/s";
-        document.getElementById('remaining').innerText = Math.round(remain) + "s";
-    }
-
-    /* Chat Fonksiyonları */
-    function sendChatMessage() {
-        const input = document.getElementById('chat-input');
-        const text = input.value.trim();
-        if (text && conn) {
-            conn.send({ type: 'chat', text: text });
-            appendChatMessage(text, 'me');
-            input.value = '';
-        }
-    }
-
-    function appendChatMessage(msg, type) {
-        const area = document.getElementById('chat-area');
-        const div = document.createElement('div');
-        div.className = `chat-msg ${type}`;
-        div.innerText = (type === 'me' ? 'Sen: ' : 'Karşı Taraf: ') + msg;
-        area.appendChild(div);
-        area.scrollTop = area.scrollHeight;
-    }
-
-    function appendChatSystem(msg) {
-        const area = document.getElementById('chat-area');
-        const div = document.createElement('div');
-        div.style.color = '#666';
-        div.style.fontStyle = 'italic';
-        div.className = 'chat-msg';
-        div.innerText = '• ' + msg;
-        area.appendChild(div);
-        area.scrollTop = area.scrollHeight;
-    }
-
-    /* Drag & Drop Sürükle Bırak İşlemleri */
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('file-input');
-
-    dropZone.onclick = () => fileInput.click();
-    fileInput.onchange = () => {
-        if (fileInput.files.length) {
-            document.getElementById('selected-file-name').innerText = fileInput.files[0].name;
-        }
-    };
-
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('dragover');
-        if (e.dataTransfer.files.length) {
-            fileInput.files = e.dataTransfer.files;
-            document.getElementById('selected-file-name').innerText = fileInput.files[0].name;
-        }
-    });
 </script>
 </body>
 </html>
