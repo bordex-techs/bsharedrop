@@ -162,6 +162,10 @@
     const myShortId = "bsd-" + rawCode; 
     
     const peer = new Peer(myShortId, {
+        host: 'bsharedrop.onrender.com',
+        port: 443,
+        path: '/',
+        secure: true,
         config: {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
